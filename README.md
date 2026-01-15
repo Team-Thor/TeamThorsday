@@ -19,3 +19,8 @@ Press F5 in VS Code to start debugging the application.
 ## Building
 
 Run `dotnet build` to build the project.
+
+# Project Contributors
+  -
+  -
+  - Jessen Forbush
