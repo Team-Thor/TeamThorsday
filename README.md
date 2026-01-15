@@ -21,6 +21,6 @@ Press F5 in VS Code to start debugging the application.
 Run `dotnet build` to build the project.
 
 # Project Contributors
-  -
+  - Jacob Martin
   - William Buechele
   - Jessen Forbush
