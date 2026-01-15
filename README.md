@@ -22,5 +22,5 @@ Run `dotnet build` to build the project.
 
 # Project Contributors
   -
-  -
+  - William Buechele
   - Jessen Forbush
