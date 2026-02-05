@@ -1,34 +1,27 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Development\\School\\CSE 325\\Team Thorsday\\Team Thorsday.csproj": {}
+    "/Users/jforbush/School/Computer Science/CSE 325/TeamThorsday/Team Thorsday.csproj": {}
   },
   "projects": {
-    "D:\\Development\\School\\CSE 325\\Team Thorsday\\Team Thorsday.csproj": {
+    "/Users/jforbush/School/Computer Science/CSE 325/TeamThorsday/Team Thorsday.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Development\\School\\CSE 325\\Team Thorsday\\Team Thorsday.csproj",
+        "projectUniqueName": "/Users/jforbush/School/Computer Science/CSE 325/TeamThorsday/Team Thorsday.csproj",
         "projectName": "Team Thorsday",
-        "projectPath": "D:\\Development\\School\\CSE 325\\Team Thorsday\\Team Thorsday.csproj",
-        "packagesPath": "C:\\Users\\buech\\.nuget\\packages\\",
-        "outputPath": "D:\\Development\\School\\CSE 325\\Team Thorsday\\obj\\",
+        "projectPath": "/Users/jforbush/School/Computer Science/CSE 325/TeamThorsday/Team Thorsday.csproj",
+        "packagesPath": "/Users/jforbush/.nuget/packages/",
+        "outputPath": "/Users/jforbush/School/Computer Science/CSE 325/TeamThorsday/obj/",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
-          "C:\\Users\\buech\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "/Users/jforbush/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "https://nuget.org/api/v2": {},
-          "https://www.nuget.org/api/v2/": {}
+          "/usr/local/share/dotnet/library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net10.0": {
@@ -55,7 +48,7 @@
             "Microsoft.AspNetCore.App.Internal.Assets": {
               "suppressParent": "All",
               "target": "Package",
-              "version": "[10.0.1, )",
+              "version": "[10.0.2, )",
               "autoReferenced": true
             },
             "Microsoft.AspNetCore.Components.WebAssembly": {
@@ -69,19 +62,19 @@
             },
             "Microsoft.DotNet.HotReload.WebAssembly.Browser": {
               "target": "Package",
-              "version": "[10.0.101, )",
+              "version": "[10.0.102, )",
               "autoReferenced": true
             },
             "Microsoft.NET.ILLink.Tasks": {
               "suppressParent": "All",
               "target": "Package",
-              "version": "[10.0.1, )",
+              "version": "[10.0.2, )",
               "autoReferenced": true
             },
             "Microsoft.NET.Sdk.WebAssembly.Pack": {
               "suppressParent": "All",
               "target": "Package",
-              "version": "[10.0.1, )",
+              "version": "[10.0.2, )",
               "autoReferenced": true
             }
           },
@@ -99,7 +92,7 @@
           "downloadDependencies": [
             {
               "name": "Microsoft.NETCore.App.Runtime.Mono.browser-wasm",
-              "version": "[10.0.1, 10.0.1]"
+              "version": "[10.0.2, 10.0.2]"
             }
           ],
           "frameworkReferences": {
@@ -107,7 +100,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.101/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/10.0.102/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",
