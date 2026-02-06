@@ -25,3 +25,4 @@ Run `dotnet build` to build the project.
   - William Buechele
   - Jessen Forbush
   - Robert Whisenhunt
+  - Tom Scott
