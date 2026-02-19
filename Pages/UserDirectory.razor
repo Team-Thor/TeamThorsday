@@ -1,0 +1,123 @@
+﻿@page "/users"
+@using Team_Thorsday.Models
+@using Team_Thorsday.Services
+@using System.Text.Json
+@using Newtonsoft.Json
+@inject IDatabaseService DbService
+
+<h3>Database Connection Test</h3>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card p-3">
+            <h5>Add Test User</h5>
+            <div class="input-group mb-2">
+                <input @bind="newUser.FirstName" class="form-control" placeholder="First Name" />
+                <input @bind="newUser.LastName" class="form-control" placeholder="Last Name" />
+            </div>
+            <input @bind="newUser.Email" class="form-control mb-2" placeholder="Email" />
+            <button class="btn btn-primary" @onclick="HandleAddUser">Add to Supabase</button>
+            <p class="text-danger mt-2">@errorMessage</p>
+        </div>
+    </div>
+</div>
+
+<ul class="nav nav-tabs">
+    <li class="nav-item">
+        <a class="nav-link @(activeTab == "table" ? "active" : "")" @onclick='() => activeTab = "table"' style="cursor:pointer">Visual Table</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(activeTab == "json" ? "active" : "")" @onclick='() => activeTab = "json"' style="cursor:pointer">Raw JSON (Debug)</a>
+    </li>
+</ul>
+
+@if (isLoading)
+{
+    <p><em>Connecting to Supabase...</em></p>
+}
+else if (activeTab == "table")
+{
+    <table class="table table-striped mt-3">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in users)
+            {
+                <tr>
+                    <td>@user.Id</td>
+                    <td>@user.FullName</td>
+                    <td>@user.Email</td>
+                    <td>
+                        <button class="btn btn-sm btn-secondary" @onclick="() => GenerateKey(user.Id)">Generate Key</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="mt-3 p-3 bg-light border">
+        <pre>@rawJson</pre>
+    </div>
+}
+
+@code {
+    private List<User> users = new();
+    private User newUser = new();
+    private string errorMessage = "";
+    private string rawJson = "";
+    private bool isLoading = true;
+    private string activeTab = "table";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            isLoading = true;
+            users = await DbService.GetUsersAsync();
+            
+            // Generate Raw JSON for debugging
+            rawJson = JsonConvert.SerializeObject(users, Formatting.Indented);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleAddUser()
+    {
+        try 
+        {
+            await DbService.AddUserAsync(newUser);
+            newUser = new User(); // Reset
+            await LoadData(); // Refresh list
+        }
+        catch(Exception ex) 
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private async Task GenerateKey(int userId)
+    {
+        await DbService.CreateApiKeyAsync(userId);
+        // In a real app we would show this, but for now just proving connection works
+    }
+}
