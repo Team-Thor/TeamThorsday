@@ -1,0 +1,27 @@
+@page "/login"
+@using Team_Thorsday.ViewModels
+@inject LoginViewModel ViewModel
+@inject NavigationManager Nav
+
+<PageTitle>Login</PageTitle>
+
+<div class="card p-4" style="max-width: 400px; margin: auto;">
+    <h2>Login</h2>
+    <input @bind="ViewModel.Email" class="form-control mb-2" placeholder="Email" />
+    <input @bind="ViewModel.Password" class="form-control mb-2" placeholder="Password" type="password" />
+    <button class="btn btn-primary" @onclick="HandleLogin" disabled="@ViewModel.IsLoading">
+        @(ViewModel.IsLoading ? "Logging in..." : "Login")
+    </button>
+    <p class="text-danger mt-2">@ViewModel.ErrorMessage</p>
+    <hr />
+    <p class="text-center mb-0">Don't have an account? <a href="/register">Register</a></p>
+</div>
+
+@code {
+    private async Task HandleLogin()
+    {
+        var success = await ViewModel.LoginAsync();
+        if (success)
+            Nav.NavigateTo("/account");
+    }
+}

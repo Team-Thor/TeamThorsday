@@ -2,10 +2,15 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Team_Thorsday;
 using Team_Thorsday.Services;
+using Team_Thorsday.ViewModels;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
+builder.Services.AddScoped<UserDirectoryViewModel>();
+builder.Services.AddScoped<LoginViewModel>();
+builder.Services.AddScoped<AccountViewModel>();
+builder.Services.AddScoped<RegisterViewModel>();
 
 var supabaseUrl = builder.Configuration["Supabase:Url"] ?? throw new InvalidOperationException("Supabase:Url is not configured");
 var supabaseKey = builder.Configuration["Supabase:Key"] ?? throw new InvalidOperationException("Supabase:Key is not configured");

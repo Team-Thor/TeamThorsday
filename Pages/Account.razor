@@ -1,0 +1,29 @@
+@page "/account"
+@using Team_Thorsday.ViewModels
+@inject AccountViewModel ViewModel
+
+<PageTitle>Account Details</PageTitle>
+
+@if (ViewModel.IsLoading)
+{
+    <p><em>Loading...</em></p>
+}
+else if (ViewModel.User is null)
+{
+    <p>@ViewModel.ErrorMessage</p>
+}
+else
+{
+    <div class="card p-3">
+        <h1>Account Info</h1>
+        <h2>Name: @ViewModel.User.FullName</h2>
+        <h2>Email: @ViewModel.User.Email</h2>
+    </div>
+}
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await ViewModel.LoadUserAsync();
+    }
+}

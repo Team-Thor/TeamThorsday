@@ -1,0 +1,29 @@
+@page "/register"
+@using Team_Thorsday.ViewModels
+@inject RegisterViewModel ViewModel
+@inject NavigationManager Nav
+
+<PageTitle>Register</PageTitle>
+
+<div class="card p-4" style="max-width: 400px; margin: auto;">
+    <h2>Create Account</h2>
+    <input @bind="ViewModel.FirstName" class="form-control mb-2" placeholder="First Name" />
+    <input @bind="ViewModel.LastName" class="form-control mb-2" placeholder="Last Name" />
+    <input @bind="ViewModel.Email" class="form-control mb-2" placeholder="Email" />
+    <input @bind="ViewModel.Password" class="form-control mb-2" placeholder="Password" type="password" />
+    <button class="btn btn-primary w-100" @onclick="HandleRegister" disabled="@ViewModel.IsLoading">
+        @(ViewModel.IsLoading ? "Creating account..." : "Register")
+    </button>
+    <p class="text-danger mt-2">@ViewModel.ErrorMessage</p>
+    <hr />
+    <p class="text-center mb-0">Already have an account? <a href="/login">Login</a></p>
+</div>
+
+@code {
+    private async Task HandleRegister()
+    {
+        var success = await ViewModel.RegisterAsync();
+        if (success)
+            Nav.NavigateTo("/account");
+    }
+}
