@@ -13,6 +13,8 @@
         @(ViewModel.IsLoading ? "Logging in..." : "Login")
     </button>
     <p class="text-danger mt-2">@ViewModel.ErrorMessage</p>
+    <hr />
+    <p class="text-center mb-0">Don't have an account? <a href="/register">Register</a></p>
 </div>
 
 @code {
