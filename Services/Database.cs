@@ -29,8 +29,25 @@ public class DatabaseService : IDatabaseService
             CreatedAt = DateTime.UtcNow,
             IsActive = true
         };
-        
+
         var response = await _supabaseClient.From<ApiKey>().Insert(newKey);
         return response.Models.First();
+    }
+    public async Task<User?> GetUserByIdAsync(int id)
+    {
+        var response = await _supabaseClient.From<User>()
+            .Where(u => u.Id == id)
+            .Get();
+
+        return response.Models.FirstOrDefault();
+    }
+
+    public async Task<User?> GetUserByEmailAsync(string email)
+    {
+        var response = await _supabaseClient.From<User>()
+            .Where(u => u.Email == email)
+            .Get();
+
+        return response.Models.FirstOrDefault();
     }
 }
