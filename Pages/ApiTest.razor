@@ -1,0 +1,253 @@
+@page "/api-test"
+@using Shared.DTOs
+@using System.Net.Http.Json
+
+<PageTitle>API Test</PageTitle>
+
+<div class="container-fluid py-4">
+    <h2 class="mb-1">Backend API Test</h2>
+    <p class="text-muted mb-4">Verify each backend route is reachable and returning data.</p>
+
+    <div class="row g-4">
+
+        @* \1 *@
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header d-flex align-items-center gap-2">
+                    <span class="badge bg-secondary">GET</span>
+                    <code>/api/steamspy/tag/{tag}</code>
+                    <span class="ms-auto text-muted small">SteamSpy — games by tag</span>
+                </div>
+                <div class="card-body">
+                    <div class="input-group mb-3" style="max-width: 400px;">
+                        <input class="form-control" @bind="tagInput" placeholder="e.g. Roguelite" />
+                        <button class="btn btn-primary" @onclick="FetchByTag" disabled="@tagLoading">
+                            @if (tagLoading) { <span class="spinner-border spinner-border-sm me-1"></span> }
+                            Fetch
+                        </button>
+                    </div>
+                    @if (tagError != null)
+                    {
+                        <div class="alert alert-danger py-2">@tagError</div>
+                    }
+                    @if (tagResults != null)
+                    {
+                        <p class="text-muted small mb-2">@tagResults.Count results</p>
+                        <div style="max-height: 300px; overflow-y: auto;">
+                            <table class="table table-sm table-striped mb-0">
+                                <thead class="table-dark sticky-top">
+                                    <tr>
+                                        <th>App ID</th>
+                                        <th>Name</th>
+                                        <th>Developer</th>
+                                        <th>Owners</th>
+                                        <th>CCU Yesterday</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var g in tagResults.Take(50))
+                                    {
+                                        <tr>
+                                            <td>@g.AppId</td>
+                                            <td>@g.Name</td>
+                                            <td>@g.Developer</td>
+                                            <td>@g.Owners</td>
+                                            <td>@g.PeakConcurrentUsersYesterday</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        @if (tagResults.Count > 50)
+                        {
+                            <p class="text-muted small mt-2 mb-0">Showing first 50 of @tagResults.Count</p>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+        @* \1 *@
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header d-flex align-items-center gap-2">
+                    <span class="badge bg-secondary">GET</span>
+                    <code>/api/steamspy/app/{appId}</code>
+                    <span class="ms-auto text-muted small">SteamSpy — app details</span>
+                </div>
+                <div class="card-body">
+                    <div class="input-group mb-3">
+                        <input class="form-control" @bind="spyAppIdInput" placeholder="e.g. 440" />
+                        <button class="btn btn-primary" @onclick="FetchSpyApp" disabled="@spyAppLoading">
+                            @if (spyAppLoading) { <span class="spinner-border spinner-border-sm me-1"></span> }
+                            Fetch
+                        </button>
+                    </div>
+                    @if (spyAppError != null)
+                    {
+                        <div class="alert alert-danger py-2">@spyAppError</div>
+                    }
+                    @if (spyAppResult != null)
+                    {
+                        <dl class="row mb-0 small">
+                            <dt class="col-4">Name</dt>       <dd class="col-8">@spyAppResult.Name</dd>
+                            <dt class="col-4">Developer</dt>  <dd class="col-8">@spyAppResult.Developer</dd>
+                            <dt class="col-4">Genre</dt>      <dd class="col-8">@spyAppResult.Genre</dd>
+                            <dt class="col-4">Owners</dt>     <dd class="col-8">@spyAppResult.Owners</dd>
+                            <dt class="col-4">Avg Playtime</dt><dd class="col-8">@spyAppResult.AveragePlaytimeMinutes min</dd>
+                            <dt class="col-4">Reviews</dt>    <dd class="col-8 text-success">+@spyAppResult.Positive <span class="text-danger">-@spyAppResult.Negative</span></dd>
+                        </dl>
+                        @if (spyAppResult.Tags.Any())
+                        {
+                            <div class="mt-3">
+                                <p class="fw-semibold small mb-1">Tags</p>
+                                <div class="d-flex flex-wrap gap-1">
+                                    @foreach (var tag in spyAppResult.Tags.Take(10))
+                                    {
+                                        <span class="badge bg-light text-dark border">@tag.Key <span class="text-muted">@tag.Value</span></span>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+        @* \1 *@
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header d-flex align-items-center gap-2">
+                    <span class="badge bg-success">GET</span>
+                    <code>/api/games/{appId}</code>
+                    <span class="ms-auto text-muted small">Combined — details + deals</span>
+                </div>
+                <div class="card-body">
+                    <div class="input-group mb-3">
+                        <input class="form-control" @bind="gameAppIdInput" placeholder="e.g. 1245620" />
+                        <button class="btn btn-success" @onclick="FetchGameDetail" disabled="@gameLoading">
+                            @if (gameLoading) { <span class="spinner-border spinner-border-sm me-1"></span> }
+                            Fetch
+                        </button>
+                    </div>
+                    @if (gameError != null)
+                    {
+                        <div class="alert alert-danger py-2">@gameError</div>
+                    }
+                    @if (gameResult != null)
+                    {
+                        <dl class="row small mb-2">
+                            <dt class="col-4">Name</dt>       <dd class="col-8">@gameResult.Name</dd>
+                            <dt class="col-4">Developer</dt>  <dd class="col-8">@gameResult.Developer</dd>
+                            <dt class="col-4">Genre</dt>      <dd class="col-8">@gameResult.Genre</dd>
+                            <dt class="col-4">Owners</dt>     <dd class="col-8">@gameResult.Owners</dd>
+                        </dl>
+                        <p class="fw-semibold small mb-1">Deals (@gameResult.Deals.Count)</p>
+                        @if (!gameResult.Deals.Any())
+                        {
+                            <p class="text-muted small">No deals found on CheapShark.</p>
+                        }
+                        else
+                        {
+                            <table class="table table-sm mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Store</th>
+                                        <th>Sale</th>
+                                        <th>Normal</th>
+                                        <th>Savings</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var deal in gameResult.Deals)
+                                    {
+                                        <tr>
+                                            <td>@deal.StoreName</td>
+                                            <td class="text-success fw-semibold">$@deal.SalePrice.ToString("0.00")</td>
+                                            <td class="text-muted">$@deal.NormalPrice.ToString("0.00")</td>
+                                            <td><span class="badge bg-warning text-dark">@deal.SavingsPercent%</span></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@code {
+    private const string BackendUrl = "http://localhost:5003";
+
+    // tag search
+    private string tagInput = "Roguelite";
+    private bool tagLoading = false;
+    private string? tagError;
+    private List<SteamSpyGameDto>? tagResults;
+
+    // steamspy app
+    private string spyAppIdInput = "440";
+    private bool spyAppLoading = false;
+    private string? spyAppError;
+    private SteamSpyGameDto? spyAppResult;
+
+    // combined game detail
+    private string gameAppIdInput = "1245620";
+    private bool gameLoading = false;
+    private string? gameError;
+    private GameDetailDto? gameResult;
+
+    private async Task FetchByTag()
+    {
+        tagLoading = true;
+        tagError = null;
+        tagResults = null;
+        try
+        {
+            using var http = new HttpClient();
+            tagResults = await http.GetFromJsonAsync<List<SteamSpyGameDto>>($"{BackendUrl}/api/steamspy/tag/{Uri.EscapeDataString(tagInput)}");
+        }
+        catch (Exception ex)
+        {
+            tagError = ex.Message;
+        }
+        tagLoading = false;
+    }
+
+    private async Task FetchSpyApp()
+    {
+        spyAppLoading = true;
+        spyAppError = null;
+        spyAppResult = null;
+        try
+        {
+            using var http = new HttpClient();
+            spyAppResult = await http.GetFromJsonAsync<SteamSpyGameDto>($"{BackendUrl}/api/steamspy/app/{spyAppIdInput}");
+        }
+        catch (Exception ex)
+        {
+            spyAppError = ex.Message;
+        }
+        spyAppLoading = false;
+    }
+
+    private async Task FetchGameDetail()
+    {
+        gameLoading = true;
+        gameError = null;
+        gameResult = null;
+        try
+        {
+            using var http = new HttpClient();
+            gameResult = await http.GetFromJsonAsync<GameDetailDto>($"{BackendUrl}/api/games/{gameAppIdInput}");
+        }
+        catch (Exception ex)
+        {
+            gameError = ex.Message;
+        }
+        gameLoading = false;
+    }
+}
