@@ -113,3 +113,219 @@ code {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+
+/* Steam dark theme base */
+body {
+    background-color: #171A21;
+    color: #c6d4df;
+    font-family: "Motiva Sans", Arial, sans-serif;
+}
+
+/* Dashboard layout */
+.dashboard-container {
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.dashboard-title {
+    text-align: center;
+    color: #66c0f4;
+    margin-bottom: 30px;
+    font-size: 2.2rem;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    padding: 10px;
+}
+
+/* Tile styling - Steam dark grey with rounded edges */
+.steam-tile {
+    background-color: #2A475E;
+    border-radius: 12px;
+    padding: 20px;
+    min-height: 280px;           /* ← changed from height */
+    height: 280px;               /* keep for now */
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    border: 1px solid #1b2838;
+    
+    /* Force visibility during debug */
+    outline: 3px solid lime !important;
+    background-color: #2A475E !important;
+}
+
+.steam-tile:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(102, 192, 244, 0.2);
+    border-color: #66c0f4;
+}
+
+.tile-header h3 {
+    margin: 0 0 6px 0;
+    color: #ffffff;
+    font-size: 1.35rem;
+}
+
+.subtitle {
+    margin: 0;
+    color: #8f98a0;
+    font-size: 0.95rem;
+}
+
+.graph-placeholder {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #1b2838;
+    border-radius: 8px;
+    margin: 12px 0;
+    position: relative;
+}
+
+.fake-graph {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    width: 85%;
+    height: 120px;
+}
+
+.fake-graph .bar {
+    flex: 1;
+    background: linear-gradient(to top, #66c0f4, #1b8dd4);
+    border-radius: 4px;
+    transition: height 0.3s;
+}
+
+.graph-label {
+    position: absolute;
+    bottom: 8px;
+    color: #66c0f4;
+    font-size: 0.8rem;
+    opacity: 0.7;
+}
+
+.tile-footer {
+    text-align: right;
+    font-size: 0.85rem;
+    color: #66c0f4;
+    opacity: 0.8;
+}
+
+/* Modal styling - Steam dark theme */
+.steam-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(23, 26, 33, 0.92);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    animation: fadeIn 0.2s ease;
+}
+
+.steam-modal-content {
+    background-color: #1B2838;
+    width: 90%;
+    max-width: 920px;
+    border-radius: 12px;
+    padding: 28px;
+    color: #c6d4df;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    border: 2px solid #2A475E;
+    position: relative;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.modal-header h2 {
+    color: #66c0f4;
+    margin: 0;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: #c6d4df;
+    font-size: 1.8rem;
+    cursor: pointer;
+    padding: 0 10px;
+}
+
+.modal-subtitle {
+    color: #8f98a0;
+    margin-bottom: 20px;
+}
+
+.expanded-graph {
+    background-color: #171A21;
+    border-radius: 10px;
+    padding: 30px;
+    margin: 20px 0;
+    height: 380px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.big-fake-graph {
+    display: flex;
+    align-items: flex-end;
+    gap: 14px;
+    width: 90%;
+    height: 260px;
+}
+
+.big-fake-graph .bar {
+    flex: 1;
+    background: linear-gradient(to top, #66c0f4, #1b8dd4);
+    border-radius: 6px;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.edit-btn {
+    background: #66c0f4;
+    color: #1b2838;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.modal-note {
+    display: block;
+    text-align: center;
+    margin-top: 16px;
+    color: #8f98a0;
+    font-size: 0.85rem;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}

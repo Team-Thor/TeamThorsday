@@ -1,0 +1,31 @@
+<div class="steam-tile" @onclick="HandleClick">
+    <div class="tile-header">
+        <h3>@TileData.Title</h3>
+        <p class="subtitle">@TileData.Subtitle</p>
+    </div>
+    
+    <div class="graph-placeholder">
+        <div class="fake-graph">
+            <div class="bar" style="height: 40%;"></div>
+            <div class="bar" style="height: 70%;"></div>
+            <div class="bar" style="height: 55%;"></div>
+            <div class="bar" style="height: 85%;"></div>
+            <div class="bar" style="height: 30%;"></div>
+        </div>
+        <div class="graph-label">Graph Preview</div>
+    </div>
+    
+    <div class="tile-footer">
+        <span class="click-hint">Click to expand →</span>
+    </div>
+</div>
+
+@code {
+    [Parameter] public TileInfo TileData { get; set; } = default!;
+    [Parameter] public EventCallback OnTileClicked { get; set; }
+
+    private async Task HandleClick()
+    {
+        await OnTileClicked.InvokeAsync();
+    }
+}
