@@ -15,4 +15,5 @@ public class SteamSpyGameDto
     public int PeakConcurrentUsersYesterday { get; set; }
     public string Price { get; set; } = ""; // in cents e.g. "1999" = $19.99
     public Dictionary<string, int> Tags { get; set; } = new();
+    public string ImageUrl => $"https://cdn.akamai.steamstatic.com/steam/apps/{AppId}/header.jpg";
 }
