@@ -14,4 +14,5 @@ public class GameDetailDto
     public int AveragePlaytimeMinutes { get; set; }
     public Dictionary<string, int> Tags { get; set; } = new();
     public List<CheapSharkDealDto> Deals { get; set; } = new();
+    public string ImageUrl => $"https://cdn.akamai.steamstatic.com/steam/apps/{AppId}/header.jpg";
 }

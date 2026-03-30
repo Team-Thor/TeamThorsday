@@ -5,6 +5,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddHttpClient<SteamSpyService>();
 builder.Services.AddHttpClient<CheapSharkService>();
+builder.Services.AddHttpClient<SteamService>();
 
 // allow the blazor client to call us
 builder.Services.AddCors(options =>
