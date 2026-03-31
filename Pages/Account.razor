@@ -1,29 +1,77 @@
 @page "/account"
 @using Team_Thorsday.ViewModels
-@inject AccountViewModel ViewModel
+@inject AccountViewModel AccountVM
+@inject LoginViewModel LoginVM
+@inject RegisterViewModel RegisterVM
 
-<PageTitle>Account Details</PageTitle>
+<PageTitle>Account</PageTitle>
 
-@if (ViewModel.IsLoading)
+@if (AccountVM.IsLoading)
 {
     <p><em>Loading...</em></p>
 }
-else if (ViewModel.User is null)
+else if (AccountVM.User is not null)
 {
-    <p>@ViewModel.ErrorMessage</p>
+    <div class="card p-3" style="max-width: 400px; margin: auto;">
+        <h1>Account Info</h1>
+        <h2>Name: @AccountVM.User.FullName</h2>
+        <h2>Email: @AccountVM.User.Email</h2>
+    </div>
 }
 else
 {
-    <div class="card p-3">
-        <h1>Account Info</h1>
-        <h2>Name: @ViewModel.User.FullName</h2>
-        <h2>Email: @ViewModel.User.Email</h2>
+    <div class="card p-4" style="max-width: 400px; margin: auto;">
+        <ul class="nav nav-tabs mb-3">
+            <li class="nav-item">
+                <button class="nav-link @(!showRegister ? "active" : "")" @onclick="() => showRegister = false">Login</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link @(showRegister ? "active" : "")" @onclick="() => showRegister = true">Register</button>
+            </li>
+        </ul>
+
+        @if (!showRegister)
+        {
+            <input @bind="LoginVM.Email" class="form-control mb-2" placeholder="Email" />
+            <input @bind="LoginVM.Password" class="form-control mb-2" placeholder="Password" type="password" />
+            <button class="btn btn-primary w-100" @onclick="HandleLogin" disabled="@LoginVM.IsLoading">
+                @(LoginVM.IsLoading ? "Logging in..." : "Login")
+            </button>
+            <p class="text-danger mt-2">@LoginVM.ErrorMessage</p>
+        }
+        else
+        {
+            <input @bind="RegisterVM.FirstName" class="form-control mb-2" placeholder="First Name" />
+            <input @bind="RegisterVM.LastName" class="form-control mb-2" placeholder="Last Name" />
+            <input @bind="RegisterVM.Email" class="form-control mb-2" placeholder="Email" />
+            <input @bind="RegisterVM.Password" class="form-control mb-2" placeholder="Password" type="password" />
+            <button class="btn btn-primary w-100" @onclick="HandleRegister" disabled="@RegisterVM.IsLoading">
+                @(RegisterVM.IsLoading ? "Creating account..." : "Register")
+            </button>
+            <p class="text-danger mt-2">@RegisterVM.ErrorMessage</p>
+        }
     </div>
 }
 
 @code {
+    private bool showRegister = false;
+
     protected override async Task OnInitializedAsync()
     {
-        await ViewModel.LoadUserAsync();
+        await AccountVM.LoadUserAsync();
+    }
+
+    private async Task HandleLogin()
+    {
+        var success = await LoginVM.LoginAsync();
+        if (success)
+            await AccountVM.LoadUserAsync();
+    }
+
+    private async Task HandleRegister()
+    {
+        var success = await RegisterVM.RegisterAsync();
+        if (success)
+            await AccountVM.LoadUserAsync();
     }
 }

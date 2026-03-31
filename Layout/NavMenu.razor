@@ -5,7 +5,7 @@
 
 <nav class="navbar navbar-expand-md top-navbar">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">Team Thorsday</a>
+        <a class="navbar-brand" href="">SteamDBDB</a>
         <button class="navbar-toggler" type="button" @onclick="ToggleNavMenu" title="Navigation menu">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -19,11 +19,6 @@
                 <li class="nav-item">
                     <NavLink class="nav-link" href="account">
                         <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> Account
-                    </NavLink>
-                </li>
-                <li class="nav-item">
-                    <NavLink class="nav-link" href="register">
-                        <span class="bi bi-person-plus-fill-nav-menu" aria-hidden="true"></span> Register
                     </NavLink>
                 </li>
                 <li class="nav-item">
@@ -53,7 +48,7 @@
     private async Task HandleLogout()
     {
         await Supabase.Auth.SignOut();
-        Nav.NavigateTo("/login");
+        Nav.NavigateTo("/account");
     }
 
     private async Task ToggleDarkMode()
