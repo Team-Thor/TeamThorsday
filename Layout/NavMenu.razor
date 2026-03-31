@@ -1,56 +1,59 @@
 ﻿@using Team_Thorsday.ViewModels
 @inject Supabase.Client Supabase
 @inject NavigationManager Nav
+@inject IJSRuntime JS
 
-<div class="top-row ps-3 navbar navbar-dark">
+<nav class="navbar navbar-expand-md top-navbar">
     <div class="container-fluid">
         <a class="navbar-brand" href="">Team Thorsday</a>
-        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+        <button class="navbar-toggler" type="button" @onclick="ToggleNavMenu" title="Navigation menu">
             <span class="navbar-toggler-icon"></span>
         </button>
-    </div>
-</div>
-
-<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
-    <nav class="nav flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="account">
-                <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> Account
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="register">
-                <span class="bi bi-person-plus-fill-nav-menu" aria-hidden="true"></span> Register
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <button class="nav-link btn btn-link" @onclick="HandleLogout">
-                <span class="bi bi-logout-nav-menu" aria-hidden="true"></span> Logout
+        <div class="@NavMenuCssClass navbar-collapse">
+            <ul class="navbar-nav me-auto mb-2 mb-md-0">
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                        <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+                    </NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="counter">
+                        <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
+                    </NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="weather">
+                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
+                    </NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="account">
+                        <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> Account
+                    </NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="register">
+                        <span class="bi bi-person-plus-fill-nav-menu" aria-hidden="true"></span> Register
+                    </NavLink>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link btn btn-link" @onclick="HandleLogout">
+                        <span class="bi bi-logout-nav-menu" aria-hidden="true"></span> Logout
+                    </button>
+                </li>
+            </ul>
+            <button class="btn btn-outline-light dark-mode-toggle" @onclick="ToggleDarkMode" title="Toggle dark mode">
+                @(isDarkMode ? "Light Mode" : "Dark Mode")
             </button>
         </div>
-    </nav>
-</div>
+    </div>
+</nav>
 
 @code {
     private bool collapseNavMenu = true;
+    private bool isDarkMode = false;
 
-    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+    private string NavMenuCssClass => collapseNavMenu ? "collapse" : "";
 
     private void ToggleNavMenu()
     {
@@ -61,5 +64,20 @@
     {
         await Supabase.Auth.SignOut();
         Nav.NavigateTo("/login");
+    }
+
+    private async Task ToggleDarkMode()
+    {
+        isDarkMode = !isDarkMode;
+        await JS.InvokeVoidAsync("setDarkMode", isDarkMode);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            isDarkMode = await JS.InvokeAsync<bool>("eval", "localStorage.getItem('darkMode') === 'true'");
+            StateHasChanged();
+        }
     }
 }
