@@ -3,6 +3,8 @@
 @inject AccountViewModel AccountVM
 @inject LoginViewModel LoginVM
 @inject RegisterViewModel RegisterVM
+@inject Supabase.Client Supabase
+@inject NavigationManager Nav
 
 <PageTitle>Account</PageTitle>
 
@@ -16,6 +18,8 @@ else if (AccountVM.User is not null)
         <h1>Account Info</h1>
         <h2>Name: @AccountVM.User.FullName</h2>
         <h2>Email: @AccountVM.User.Email</h2>
+        <hr />
+        <button class="btn btn-outline-danger w-100" @onclick="HandleLogout">Logout</button>
     </div>
 }
 else
@@ -73,5 +77,11 @@ else
         var success = await RegisterVM.RegisterAsync();
         if (success)
             await AccountVM.LoadUserAsync();
+    }
+
+    private async Task HandleLogout()
+    {
+        await Supabase.Auth.SignOut();
+        await AccountVM.LoadUserAsync();
     }
 }

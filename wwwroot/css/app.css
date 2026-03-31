@@ -114,6 +114,42 @@ code {
     text-align: start;
 }
 
+/* Gradient border button — matches navbar Steam gradient */
+.btn-gradient-border {
+    border: 2px solid transparent !important;
+    background:
+        linear-gradient(#ffffff, #ffffff) padding-box,
+        linear-gradient(90deg, #171a21 0%, #1b2838 50%, #2a475e 100%) border-box !important;
+    color: #1b2838 !important;
+    border-radius: 6px;
+}
+
+.btn-gradient-border:hover:not(:disabled) {
+    background:
+        linear-gradient(#f0f4f8, #f0f4f8) padding-box,
+        linear-gradient(90deg, #171a21 0%, #1b2838 50%, #2a475e 100%) border-box !important;
+    color: #171a21 !important;
+}
+
+.btn-gradient-border:disabled {
+    opacity: 0.75;
+    cursor: default;
+}
+
+body.dark-mode .btn-gradient-border {
+    background:
+        linear-gradient(#1e1e1e, #1e1e1e) padding-box,
+        linear-gradient(90deg, #4c6b8a 0%, #66a0c8 50%, #90caf9 100%) border-box !important;
+    color: #c6d4df !important;
+}
+
+body.dark-mode .btn-gradient-border:hover:not(:disabled) {
+    background:
+        linear-gradient(#2a3a4a, #2a3a4a) padding-box,
+        linear-gradient(90deg, #4c6b8a 0%, #66a0c8 50%, #90caf9 100%) border-box !important;
+    color: #e0e0e0 !important;
+}
+
 /* Light mode contrast fixes — Bootstrap defaults fail WCAG 4.5:1 */
 .text-success {
     color: #166534 !important;

@@ -1,6 +1,4 @@
 ﻿@using Team_Thorsday.ViewModels
-@inject Supabase.Client Supabase
-@inject NavigationManager Nav
 @inject IJSRuntime JS
 
 <nav class="navbar navbar-expand-md top-navbar">
@@ -21,11 +19,6 @@
                         <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> Account
                     </NavLink>
                 </li>
-                <li class="nav-item">
-                    <button class="nav-link btn btn-link" @onclick="HandleLogout">
-                        <span class="bi bi-logout-nav-menu" aria-hidden="true"></span> Logout
-                    </button>
-                </li>
             </ul>
             <button class="btn btn-outline-light dark-mode-toggle" @onclick="ToggleDarkMode" title="Toggle dark mode">
                 @(isDarkMode ? "Light Mode" : "Dark Mode")
@@ -43,12 +36,6 @@
     private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
-    }
-
-    private async Task HandleLogout()
-    {
-        await Supabase.Auth.SignOut();
-        Nav.NavigateTo("/account");
     }
 
     private async Task ToggleDarkMode()
