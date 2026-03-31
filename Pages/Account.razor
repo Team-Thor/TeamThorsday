@@ -25,6 +25,10 @@ else if (AccountVM.User is not null)
 else
 {
     <div class="card p-4" style="max-width: 400px; margin: auto;">
+        @if (!string.IsNullOrEmpty(AccountVM.ErrorMessage))
+        {
+            <div class="alert alert-danger py-2 mb-3">@AccountVM.ErrorMessage</div>
+        }
         <ul class="nav nav-tabs mb-3">
             <li class="nav-item">
                 <button class="nav-link @(!showRegister ? "active" : "")" @onclick="() => showRegister = false">Login</button>
