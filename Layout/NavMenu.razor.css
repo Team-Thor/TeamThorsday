@@ -1,5 +1,6 @@
 .top-navbar {
-    background: linear-gradient(90deg, rgb(5, 39, 103) 0%, #3a0647 100%);
+    background: linear-gradient(90deg, #171a21 0%, #1b2838 50%, #2a475e 100%);
+    border-bottom: 2px solid #4c6b8a;
     position: sticky;
     top: 0;
     z-index: 1000;
@@ -62,13 +63,13 @@
 }
 
 .nav-item ::deep a.active {
-    background-color: rgba(255, 255, 255, 0.37);
-    color: white;
+    background-color: rgba(76, 107, 138, 0.5);
+    color: #c6d4df;
 }
 
 .nav-item ::deep a:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    color: white;
+    background-color: rgba(76, 107, 138, 0.3);
+    color: #c6d4df;
 }
 
 .nav-item .btn-link {
@@ -80,11 +81,19 @@
 }
 
 .nav-item .btn-link:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    color: white;
+    background-color: rgba(76, 107, 138, 0.3);
+    color: #c6d4df;
 }
 
 .dark-mode-toggle {
     font-size: 0.85rem;
     white-space: nowrap;
+    border-color: #4c6b8a;
+    color: #c6d4df;
+}
+
+.dark-mode-toggle:hover {
+    background-color: #4c6b8a;
+    border-color: #66a0c8;
+    color: white;
 }
