@@ -1,0 +1,51 @@
+@if (TileData != null)
+{
+    <div class="steam-modal-backdrop" @onclick="OnCloseClicked">
+        <div class="steam-modal-content" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <h2>@TileData.Title</h2>
+                <button class="close-btn" @onclick="OnCloseClicked">✕</button>
+            </div>
+            
+            <p class="modal-subtitle">@TileData.Subtitle</p>
+            
+            <!-- Expanded graph area (much larger placeholder - replace with real chart here too) -->
+            <div class="expanded-graph">
+                <div class="big-fake-graph">
+                    <!-- Larger CSS visualization -->
+                    <div class="bar" style="height: 35%;"></div>
+                    <div class="bar" style="height: 65%;"></div>
+                    <div class="bar" style="height: 80%;"></div>
+                    <div class="bar" style="height: 45%;"></div>
+                    <div class="bar" style="height: 90%;"></div>
+                    <div class="bar" style="height: 55%;"></div>
+                </div>
+                <div class="graph-label">Full Data Graph from SteamDB</div>
+            </div>
+            
+            <!-- Future editing area (buttons are placeholders) -->
+            <div class="modal-actions">
+                <button class="edit-btn" @onclick="HandleEditClick">✏️ Edit Tile Settings</button>
+                <button class="close-btn" @onclick="OnCloseClicked">Close</button>
+            </div>
+            
+            <small class="modal-note">* Editing functionality coming soon (save custom metric, graph type, SteamDB query, etc.)</small>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public TileInfo TileData { get; set; } = default!;
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private async Task OnCloseClicked()
+    {
+        await OnClose.InvokeAsync();
+    }
+
+    private void HandleEditClick()
+    {
+        // Placeholder - you will wire this to your editing logic later
+        Console.WriteLine($"Editing tile {TileData.Id}");
+    }
+}
