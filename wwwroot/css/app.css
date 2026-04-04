@@ -114,6 +114,250 @@ code {
     text-align: start;
 }
 
+/* Gradient border button — matches navbar Steam gradient */
+.btn-gradient-border {
+    border: 2px solid transparent !important;
+    background:
+        linear-gradient(#ffffff, #ffffff) padding-box,
+        linear-gradient(90deg, #171a21 0%, #1b2838 50%, #2a475e 100%) border-box !important;
+    color: #1b2838 !important;
+    border-radius: 6px;
+}
+
+.btn-gradient-border:hover:not(:disabled) {
+    background:
+        linear-gradient(#f0f4f8, #f0f4f8) padding-box,
+        linear-gradient(90deg, #171a21 0%, #1b2838 50%, #2a475e 100%) border-box !important;
+    color: #171a21 !important;
+}
+
+.btn-gradient-border:disabled {
+    opacity: 0.75;
+    cursor: default;
+}
+
+body.dark-mode .btn-gradient-border {
+    background:
+        linear-gradient(#1e1e1e, #1e1e1e) padding-box,
+        linear-gradient(90deg, #4c6b8a 0%, #66a0c8 50%, #90caf9 100%) border-box !important;
+    color: #c6d4df !important;
+}
+
+body.dark-mode .btn-gradient-border:hover:not(:disabled) {
+    background:
+        linear-gradient(#2a3a4a, #2a3a4a) padding-box,
+        linear-gradient(90deg, #4c6b8a 0%, #66a0c8 50%, #90caf9 100%) border-box !important;
+    color: #e0e0e0 !important;
+}
+
+/* Light mode contrast fixes — Bootstrap defaults fail WCAG 4.5:1 */
+.text-success {
+    color: #166534 !important;
+}
+
+.text-danger, .validation-message {
+    color: #991b1b !important;
+}
+
+.text-muted {
+    color: #555e6a !important;
+}
+
+/* Dark Mode */
+body.dark-mode {
+    /* Bootstrap CSS variable overrides — propagate to all components */
+    --bs-body-color: #e0e0e0;
+    --bs-body-bg: #121212;
+    --bs-secondary-color: #a8a8b3;
+    --bs-heading-color: #e0e0e0;
+    --bs-link-color: #90caf9;
+    --bs-link-hover-color: #bbdefb;
+    --bs-border-color: #444444;
+    --bs-card-bg: #1e1e1e;
+    --bs-card-border-color: #333333;
+    --bs-nav-tabs-border-color: #444444;
+    --bs-nav-tabs-link-active-bg: #1e1e1e;
+    --bs-nav-tabs-link-active-border-color: #444444 #444444 #1e1e1e;
+    --bs-nav-tabs-link-active-color: #e0e0e0;
+    background-color: #121212;
+    color: #e0e0e0;
+}
+
+/* Headings */
+body.dark-mode h1, body.dark-mode h2, body.dark-mode h3,
+body.dark-mode h4, body.dark-mode h5, body.dark-mode h6 {
+    color: #e0e0e0;
+}
+
+/* Links */
+body.dark-mode a, body.dark-mode .btn-link {
+    color: #90caf9;
+}
+
+body.dark-mode a:hover, body.dark-mode .btn-link:hover {
+    color: #bbdefb;
+}
+
+/* Buttons */
+body.dark-mode .btn-primary {
+    background-color: #1565c0;
+    border-color: #0d47a1;
+    color: #ffffff;
+}
+
+/* Forms */
+body.dark-mode .form-control,
+body.dark-mode .form-select {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    border-color: #555;
+}
+
+body.dark-mode .form-control::placeholder,
+body.dark-mode .form-select::placeholder {
+    color: #7a7a8a;
+}
+
+body.dark-mode .form-control:focus,
+body.dark-mode .form-select:focus {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    border-color: #90caf9;
+    box-shadow: 0 0 0 0.1rem rgba(144, 202, 249, 0.25);
+}
+
+/* Cards */
+body.dark-mode .card {
+    background-color: #1e1e1e;
+    border-color: #333;
+    color: #e0e0e0;
+}
+
+body.dark-mode .card-header {
+    background-color: #2a2a2a;
+    border-bottom-color: #444;
+    color: #e0e0e0;
+}
+
+/* Inline code (ApiTest card headers) */
+body.dark-mode code {
+    color: #f48fb1;
+    background-color: transparent;
+}
+
+/* Tables */
+body.dark-mode .table {
+    --bs-table-color: #e0e0e0;
+    --bs-table-border-color: #444;
+    color: #e0e0e0;
+    border-color: #444;
+}
+
+body.dark-mode .table-striped > tbody > tr:nth-of-type(odd) > * {
+    --bs-table-accent-bg: rgba(255, 255, 255, 0.05);
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #e0e0e0;
+}
+
+body.dark-mode .table-light {
+    --bs-table-bg: #2a2a2a;
+    --bs-table-color: #e0e0e0;
+    --bs-table-border-color: #444;
+    color: #e0e0e0;
+}
+
+body.dark-mode .table th,
+body.dark-mode .table td {
+    color: #e0e0e0;
+    border-color: #444;
+}
+
+/* Nav tabs */
+body.dark-mode .nav-tabs {
+    border-bottom-color: #444;
+}
+
+body.dark-mode .nav-tabs .nav-link {
+    color: #a8a8b3;
+    border-color: transparent;
+}
+
+body.dark-mode .nav-tabs .nav-link:hover {
+    color: #e0e0e0;
+    border-color: #555 #555 transparent;
+}
+
+body.dark-mode .nav-tabs .nav-link.active {
+    background-color: #1e1e1e;
+    border-color: #444 #444 #1e1e1e;
+    color: #e0e0e0;
+}
+
+/* Badges */
+body.dark-mode .badge.bg-light {
+    background-color: #3a3a3a !important;
+    color: #e0e0e0 !important;
+    border-color: #555 !important;
+}
+
+body.dark-mode .badge.bg-secondary {
+    background-color: #4a4a5a !important;
+    color: #e0e0e0 !important;
+}
+
+/* bg-light utility (used in UserDirectory JSON pre block) */
+body.dark-mode .bg-light {
+    background-color: #2a2a2a !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode .text-dark {
+    color: #e0e0e0 !important;
+}
+
+/* Preformatted text */
+body.dark-mode pre {
+    color: #e0e0e0;
+}
+
+/* Horizontal rule */
+body.dark-mode hr {
+    border-color: #444;
+    opacity: 1;
+}
+
+/* Contrast-corrected semantic colors in dark mode */
+body.dark-mode .text-muted {
+    color: #a8a8b3 !important;
+}
+
+body.dark-mode .text-success {
+    color: #66bb6a !important;
+}
+
+body.dark-mode .text-danger,
+body.dark-mode .validation-message {
+    color: #ef9a9a !important;
+}
+
+/* Alerts */
+body.dark-mode .alert-danger {
+    background-color: #3c1212;
+    border-color: #7c2020;
+    color: #ef9a9a;
+}
+
+/* Modals */
+body.dark-mode .modal-content {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+}
+
+body.dark-mode .modal-header,
+body.dark-mode .modal-footer {
+    border-color: #444;
+}
+
 /* Steam dark theme base */
 body {
     background-color: #171A21;

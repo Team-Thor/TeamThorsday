@@ -23,13 +23,13 @@ public class AccountViewModel
         try
         {
             IsLoading = true;
+            User = null;
+            ErrorMessage = "";
+
             var session = _supabase.Auth.CurrentSession;
 
             if (session?.User?.Email is null)
-            {
-                ErrorMessage = "Not logged in.";
                 return;
-            }
 
             User = await _dbService.GetUserByEmailAsync(session.User.Email);
         }
