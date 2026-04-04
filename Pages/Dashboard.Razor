@@ -1,0 +1,38 @@
+@page "/dashboard"
+@page "/"
+
+<div class="dashboard-container">
+    <h1 class="dashboard-title">SteamDB Dashboard</h1>
+    
+    <div class="dashboard-grid">
+        @foreach (var tile in tiles)
+        {
+            <Tile TileData="tile" OnTileClicked="() => OpenModal(tile)" />
+        }
+    </div>
+</div>
+
+
+@if (selectedTile != null)
+{
+    <TileModal TileData="selectedTile" OnClose="() => selectedTile = null" />
+}
+
+@code {
+    private List<TileInfo> tiles = new()
+    {
+        new TileInfo { Id = 1, Title = "Most Played This Week", Subtitle = "SteamDB Top Games" },
+        new TileInfo { Id = 2, Title = "Concurrent Players", Subtitle = "Live SteamDB Stats" },
+        new TileInfo { Id = 3, Title = "Price Drops", Subtitle = "SteamDB Deals" },
+        new TileInfo { Id = 4, Title = "New Releases", Subtitle = "SteamDB Trending" },
+        new TileInfo { Id = 5, Title = "Top Concurrent Players", Subtitle = "SteamDB Stats" },
+        new TileInfo { Id = 6, Title = "Reviews", Subtitle = "SteamDB Revies" }
+    };
+
+    private TileInfo? selectedTile;
+
+    private void OpenModal(TileInfo tile)
+    {
+        selectedTile = tile;
+    }
+}
