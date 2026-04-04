@@ -1,0 +1,132 @@
+@using Shared.DTOs
+@inject IJSRuntime JS
+
+<div class="graph-view">
+    <div class="graph-tabs">
+        <button class="graph-tab @(activeTab == "ccu"      ? "active" : "")" @onclick='() => SetTab("ccu")'>Peak CCU</button>
+        <button class="graph-tab @(activeTab == "owned"    ? "active" : "")" @onclick='() => SetTab("owned")'>Most Owned</button>
+        <button class="graph-tab @(activeTab == "genres"   ? "active" : "")" @onclick='() => SetTab("genres")'>By Genre</button>
+        <button class="graph-tab @(activeTab == "reviews"  ? "active" : "")" @onclick='() => SetTab("reviews")'>Review Scores</button>
+    </div>
+
+    <div class="graph-canvas-wrapper">
+        @if (!TopGames.Any() && !Genres.Any())
+        {
+            <div class="graph-loading">Loading chart data...</div>
+        }
+        else
+        {
+            <canvas id="steamDashboardChart"></canvas>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public List<SteamSpyGameDto> TopGames { get; set; } = new();
+    [Parameter] public List<GenreStatsDto> Genres { get; set; } = new();
+    [Parameter] public int ChartCount { get; set; } = 15;
+
+    private string activeTab = "ccu";
+    private string _lastRenderedTab = "";
+    private int _lastChartCount = 0;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        bool hasData = TopGames.Any() || Genres.Any();
+        bool needsRender = activeTab != _lastRenderedTab || ChartCount != _lastChartCount;
+        if (hasData && needsRender)
+        {
+            _lastRenderedTab = activeTab;
+            _lastChartCount  = ChartCount;
+            await RenderChart();
+        }
+    }
+
+    private async Task SetTab(string tab)
+    {
+        activeTab = tab;
+        _lastRenderedTab = "";
+        StateHasChanged();
+    }
+
+    private async Task RenderChart()
+    {
+        switch (activeTab)
+        {
+            case "ccu":
+                // Log scale: CS:GO (1M) would flatten everyone else on linear
+                var ccuGames = TopGames
+                    .OrderByDescending(g => g.PeakConcurrentUsersYesterday)
+                    .Take(ChartCount).ToList();
+                await JS.InvokeVoidAsync("renderSteamChart",
+                    "steamDashboardChart", "bar",
+                    ccuGames.Select(g => TruncateName(g.Name)).ToArray(),
+                    ccuGames.Select(g => (object)g.PeakConcurrentUsersYesterday).ToArray(),
+                    "Peak CCU Yesterday",
+                    new { logScale = true });
+                break;
+
+            case "owned":
+                // Sort by CCU (owners ranges are too coarse — many games share same bucket).
+                // Display midpoint of range as the value.
+                var ownedGames = TopGames
+                    .OrderByDescending(g => g.PeakConcurrentUsersYesterday)
+                    .Take(ChartCount).ToList();
+                await JS.InvokeVoidAsync("renderSteamChart",
+                    "steamDashboardChart", "bar",
+                    ownedGames.Select(g => TruncateName(g.Name)).ToArray(),
+                    ownedGames.Select(g => (object)ParseOwnersMid(g.Owners)).ToArray(),
+                    "Estimated Owners",
+                    new { logScale = true });
+                break;
+
+            case "genres":
+                // Avg CCU per game is more meaningful than total CCU —
+                // total is inflated by huge genre sizes (Action has 37k games).
+                var genresSorted = Genres
+                    .Where(g => g.GameCount > 0)
+                    .OrderByDescending(g => g.TotalCcu / g.GameCount)
+                    .ToList();
+                await JS.InvokeVoidAsync("renderSteamChart",
+                    "steamDashboardChart", "bar",
+                    genresSorted.Select(g => g.Genre).ToArray(),
+                    genresSorted.Select(g => (object)(g.TotalCcu / g.GameCount)).ToArray(),
+                    "Avg CCU per Game");
+                break;
+
+            case "reviews":
+                // Filter to games with enough reviews for a meaningful score,
+                // and set Y min near the floor of the data so differences show.
+                var reviewGames = TopGames
+                    .Where(g => g.Positive + g.Negative >= 1000)
+                    .OrderByDescending(g => (double)g.Positive / (g.Positive + g.Negative))
+                    .Take(ChartCount).ToList();
+                double yMin = reviewGames.Any()
+                    ? Math.Floor(reviewGames.Min(g => (double)g.Positive / (g.Positive + g.Negative) * 100)) - 2
+                    : 80;
+                await JS.InvokeVoidAsync("renderSteamChart",
+                    "steamDashboardChart", "bar",
+                    reviewGames.Select(g => TruncateName(g.Name)).ToArray(),
+                    reviewGames.Select(g => (object)Math.Round((double)g.Positive / (g.Positive + g.Negative) * 100, 1)).ToArray(),
+                    "Positive Review %",
+                    new { yMin });
+                break;
+        }
+    }
+
+    private static string TruncateName(string name) =>
+        name.Length > 20 ? name[..17] + "…" : name;
+
+    // Parse midpoint of "100,000,000 .. 200,000,000" → 150,000,000
+    private static long ParseOwnersMid(string owners)
+    {
+        var parts = owners.Split("..");
+        if (parts.Length == 2
+            && long.TryParse(parts[0].Trim().Replace(",", ""), out var lo)
+            && long.TryParse(parts[1].Trim().Replace(",", ""), out var hi))
+            return (lo + hi) / 2;
+        if (parts.Length >= 1 && long.TryParse(parts[0].Trim().Replace(",", ""), out var lower))
+            return lower;
+        return 0;
+    }
+}

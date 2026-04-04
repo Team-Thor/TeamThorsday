@@ -370,6 +370,262 @@ body {
     padding: 0 20px;
 }
 
+/* Toolbar (filter/graph button row) */
+.dashboard-toolbar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+/* Filter dropdown */
+.filter-dropdown-wrapper {
+    position: relative;
+}
+
+.filter-panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #1b2838;
+    border: 1px solid #2a475e;
+    border-radius: 10px;
+    padding: 16px 20px;
+    min-width: 420px;
+    z-index: 200;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    animation: fadeIn 0.15s ease;
+}
+
+.filter-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 199;
+}
+
+.filter-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.filter-row .filter-section {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.filter-divider {
+    border-top: 1px solid #2a475e;
+    margin: 12px 0;
+}
+
+body:not(.dark-mode) .filter-divider {
+    border-color: #d0dce8;
+}
+
+.filter-section {
+    margin-bottom: 14px;
+}
+
+.filter-section:last-child {
+    margin-bottom: 0;
+}
+
+.filter-section-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #66c0f4;
+    margin-bottom: 8px;
+}
+
+.filter-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #c6d4df;
+    font-size: 0.88rem;
+    cursor: pointer;
+}
+
+.filter-option input[type="checkbox"] {
+    accent-color: #66c0f4;
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+}
+
+.filter-label {
+    font-size: 0.83rem;
+    color: #8f98a0;
+    margin-bottom: 6px;
+}
+
+.filter-radio-group {
+    display: flex;
+    gap: 6px;
+}
+
+.filter-radio {
+    padding: 4px 14px;
+    border-radius: 16px;
+    border: 1px solid #2a475e;
+    color: #8f98a0;
+    font-size: 0.83rem;
+    cursor: pointer;
+    transition: all 0.12s ease;
+    user-select: none;
+}
+
+.filter-radio:hover {
+    border-color: #66c0f4;
+    color: #c6d4df;
+}
+
+.filter-radio.active {
+    background-color: #2a475e;
+    border-color: #66c0f4;
+    color: #66c0f4;
+    font-weight: 600;
+}
+
+.filter-apply-btn {
+    width: 100%;
+    padding: 8px;
+    background: linear-gradient(90deg, #1b2838 0%, #2a475e 100%);
+    border: 1px solid #66c0f4;
+    color: #66c0f4;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.filter-apply-btn:hover {
+    background: #2a475e;
+    color: #ffffff;
+}
+
+body:not(.dark-mode) .filter-apply-btn {
+    background: linear-gradient(90deg, #dbeafe 0%, #bfdbfe 100%);
+    border-color: #3b82f6;
+    color: #1d4ed8;
+}
+
+body:not(.dark-mode) .filter-apply-btn:hover {
+    background: #bfdbfe;
+}
+
+/* Light mode filter panel */
+body:not(.dark-mode) .filter-panel {
+    background-color: #ffffff;
+    border-color: #d0dce8;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+body:not(.dark-mode) .filter-section-title {
+    color: #1d4ed8;
+}
+
+body:not(.dark-mode) .filter-option {
+    color: #374151;
+}
+
+body:not(.dark-mode) .filter-label {
+    color: #6b7280;
+}
+
+body:not(.dark-mode) .filter-radio {
+    border-color: #d0dce8;
+    color: #4a5568;
+}
+
+body:not(.dark-mode) .filter-radio.active {
+    background-color: #dbeafe;
+    border-color: #3b82f6;
+    color: #1d4ed8;
+}
+
+/* Graph view panel */
+.graph-view {
+    background-color: #1b2838;
+    border: 1px solid #2a475e;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 28px;
+    animation: fadeIn 0.2s ease;
+}
+
+.graph-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.graph-tab {
+    background: transparent;
+    border: 1px solid #2a475e;
+    color: #8f98a0;
+    padding: 6px 18px;
+    border-radius: 20px;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.graph-tab:hover {
+    border-color: #66c0f4;
+    color: #c6d4df;
+}
+
+.graph-tab.active {
+    background-color: #2a475e;
+    border-color: #66c0f4;
+    color: #66c0f4;
+    font-weight: 600;
+}
+
+.graph-canvas-wrapper {
+    position: relative;
+    height: 340px;
+}
+
+.graph-canvas-wrapper canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.graph-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #8f98a0;
+    font-size: 0.95rem;
+}
+
+/* Light mode adjustments for graph panel */
+body:not(.dark-mode) .graph-view {
+    background-color: #f0f4f8;
+    border-color: #d0dce8;
+}
+
+body:not(.dark-mode) .graph-tab {
+    border-color: #b0c4d8;
+    color: #4a5568;
+}
+
+body:not(.dark-mode) .graph-tab.active {
+    background-color: #dbeafe;
+    border-color: #3b82f6;
+    color: #1d4ed8;
+}
+
 .dashboard-title {
     text-align: center;
     color: #66c0f4;
