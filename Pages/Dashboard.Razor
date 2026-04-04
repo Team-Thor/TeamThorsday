@@ -1,9 +1,12 @@
 @page "/dashboard"
 @page "/"
+@using Team_Thorsday.Models
+@using Shared.DTOs
+@inject SteamDashboardService DashboardService
 
 <div class="dashboard-container">
     <h1 class="dashboard-title">SteamDB Dashboard</h1>
-    
+
     <div class="dashboard-grid">
         @foreach (var tile in tiles)
         {
@@ -11,7 +14,6 @@
         }
     </div>
 </div>
-
 
 @if (selectedTile != null)
 {
@@ -21,18 +23,98 @@
 @code {
     private List<TileInfo> tiles = new()
     {
-        new TileInfo { Id = 1, Title = "Most Played This Week", Subtitle = "SteamDB Top Games" },
-        new TileInfo { Id = 2, Title = "Concurrent Players", Subtitle = "Live SteamDB Stats" },
-        new TileInfo { Id = 3, Title = "Price Drops", Subtitle = "SteamDB Deals" },
-        new TileInfo { Id = 4, Title = "New Releases", Subtitle = "SteamDB Trending" },
-        new TileInfo { Id = 5, Title = "Top Concurrent Players", Subtitle = "SteamDB Stats" },
-        new TileInfo { Id = 6, Title = "Reviews", Subtitle = "SteamDB Revies" }
+        new TileInfo { Id = 1, Title = "Most Played This Week", Subtitle = "Top games by ownership", ValueHeader = "Owners" },
+        new TileInfo { Id = 2, Title = "Concurrent Players", Subtitle = "Peak CCU yesterday", ValueHeader = "Peak CCU" },
+        new TileInfo { Id = 3, Title = "Price by Genre", Subtitle = "Avg price per genre", ValueHeader = "Avg Price" },
+        new TileInfo { Id = 4, Title = "New Releases", Subtitle = "Latest on Steam", ValueHeader = "Price" },
+        new TileInfo { Id = 5, Title = "Most Time Played", Subtitle = "Top games by avg playtime", ValueHeader = "Avg Playtime" },
+        new TileInfo { Id = 6, Title = "Top Reviewed", Subtitle = "Highest positive review %", ValueHeader = "Score" }
     };
 
     private TileInfo? selectedTile;
 
-    private void OpenModal(TileInfo tile)
+    private void OpenModal(TileInfo tile) => selectedTile = tile;
+
+    protected override async Task OnInitializedAsync()
     {
-        selectedTile = tile;
+        string? topError = null, newError = null, genreError = null;
+        List<SteamSpyGameDto> top = new();
+        List<SteamSpyGameDto> newGames = new();
+        List<GenreStatsDto> genres = new();
+
+        await Task.WhenAll(
+            SafeFetch(() => DashboardService.GetTopGamesAsync(), v => top = v, e => topError = e),
+            SafeFetch(() => DashboardService.GetNewReleasesAsync(), v => newGames = v, e => newError = e),
+            SafeFetch(() => DashboardService.GetGenreStatsAsync(), v => genres = v, e => genreError = e)
+        );
+
+        // tiles 0,1,4,5 all depend on top games
+        if (topError != null)
+        {
+            tiles[0].ErrorMessage = tiles[1].ErrorMessage = tiles[4].ErrorMessage = tiles[5].ErrorMessage = topError;
+            tiles[0].IsLoading = tiles[1].IsLoading = tiles[4].IsLoading = tiles[5].IsLoading = false;
+        }
+
+        if (genreError != null) { tiles[2].ErrorMessage = genreError; tiles[2].IsLoading = false; }
+        if (newError != null)   { tiles[3].ErrorMessage = newError;   tiles[3].IsLoading = false; }
+
+        PopulateTile(tiles[0],
+            top.Take(5).Select(g => new TileItem(g.Name, g.Owners)).ToList(),
+            top.Take(20).Select(g => new TileItem(g.Name, g.Owners)).ToList());
+
+        var byCcu = top.OrderByDescending(g => g.PeakConcurrentUsersYesterday).ToList();
+        PopulateTile(tiles[1],
+            byCcu.Take(5).Select(g => new TileItem(g.Name, $"{g.PeakConcurrentUsersYesterday:N0}")).ToList(),
+            byCcu.Take(20).Select(g => new TileItem(g.Name, $"{g.PeakConcurrentUsersYesterday:N0}")).ToList());
+
+        var byPrice = genres.OrderByDescending(g => g.AvgPriceUsd).ToList();
+        PopulateTile(tiles[2],
+            byPrice.Take(5).Select(g => new TileItem(g.Genre, $"${g.AvgPriceUsd:F2}")).ToList(),
+            byPrice.Select(g => new TileItem(g.Genre, $"${g.AvgPriceUsd:F2} ({g.GameCount} games)")).ToList());
+
+        PopulateTile(tiles[3],
+            newGames.Take(5).Select(g => new TileItem(g.Name, FormatPrice(g.Price))).ToList(),
+            newGames.Take(20).Select(g => new TileItem(g.Name, FormatPrice(g.Price))).ToList());
+
+        var byPlaytime = top.OrderByDescending(g => g.AveragePlaytimeMinutes).ToList();
+        PopulateTile(tiles[4],
+            byPlaytime.Take(5).Select(g => new TileItem(g.Name, $"{g.AveragePlaytimeMinutes / 60}h avg")).ToList(),
+            byPlaytime.Take(20).Select(g => new TileItem(g.Name, $"{g.AveragePlaytimeMinutes / 60}h avg")).ToList());
+
+        var byReviews = top
+            .Where(g => g.Positive + g.Negative > 0)
+            .OrderByDescending(g => (double)g.Positive / (g.Positive + g.Negative))
+            .ToList();
+        PopulateTile(tiles[5],
+            byReviews.Take(5).Select(g => new TileItem(g.Name, $"{(double)g.Positive / (g.Positive + g.Negative) * 100:F0}%")).ToList(),
+            byReviews.Take(20).Select(g => new TileItem(g.Name, $"{(double)g.Positive / (g.Positive + g.Negative) * 100:F0}%")).ToList());
+
+        StateHasChanged();
+    }
+
+    private static void PopulateTile(TileInfo tile, List<TileItem> preview, List<TileItem> full)
+    {
+        tile.PreviewItems = preview;
+        tile.FullItems = full;
+        tile.IsLoading = false;
+    }
+
+    private static string FormatPrice(string price) =>
+        !string.IsNullOrEmpty(price) && price != "0" && int.TryParse(price, out var cents)
+            ? $"${cents / 100.0:F2}"
+            : "Free";
+
+    private static async Task SafeFetch<T>(Func<Task<T?>> fetch, Action<T> onSuccess, Action<string> onError) where T : class
+    {
+        try
+        {
+            var result = await fetch();
+            if (result != null) onSuccess(result);
+            else onError("No data returned");
+        }
+        catch (Exception ex)
+        {
+            onError(ex.Message);
+        }
     }
 }

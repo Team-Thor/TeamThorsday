@@ -358,10 +358,8 @@ body.dark-mode .modal-footer {
     border-color: #444;
 }
 
-/* Steam dark theme base */
+/* Steam font applies globally */
 body {
-    background-color: #171A21;
-    color: #c6d4df;
     font-family: "Motiva Sans", Arial, sans-serif;
 }
 
@@ -400,9 +398,7 @@ body {
     box-shadow: 0 4px 12px rgba(0,0,0,0.4);
     border: 1px solid #1b2838;
     
-    /* Force visibility during debug */
-    outline: 3px solid lime !important;
-    background-color: #2A475E !important;
+    background-color: #2A475E;
 }
 
 .steam-tile:hover {
@@ -566,6 +562,89 @@ body {
     margin-top: 16px;
     color: #8f98a0;
     font-size: 0.85rem;
+}
+
+/* Tile list */
+.tile-body {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.tile-list {
+    list-style: none;
+    padding: 0;
+    margin: 8px 0 0 0;
+}
+
+.tile-list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 3px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    font-size: 0.82rem;
+    color: #c6d4df;
+}
+
+.tile-item-name {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-right: 8px;
+}
+
+.tile-item-value {
+    color: #66c0f4;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.tile-loading {
+    text-align: center;
+    color: #8f98a0;
+    font-size: 0.9rem;
+    padding: 20px 0;
+}
+
+.tile-error {
+    text-align: center;
+    color: #ef9a9a;
+    font-size: 0.85rem;
+    padding: 20px 0;
+}
+
+/* Modal table */
+.modal-table-wrapper {
+    max-height: 400px;
+    overflow-y: auto;
+    margin: 16px 0;
+}
+
+.steam-table {
+    width: 100%;
+    color: #c6d4df;
+    border-color: #2a475e;
+}
+
+.steam-table thead th {
+    background-color: #1b2838;
+    color: #66c0f4;
+    border-color: #2a475e;
+    position: sticky;
+    top: 0;
+}
+
+.steam-table tbody tr {
+    border-color: #2a475e;
+}
+
+.steam-table tbody tr:hover {
+    background-color: rgba(102, 192, 244, 0.07);
 }
 
 /* Animations */

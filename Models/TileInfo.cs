@@ -1,11 +1,14 @@
+using Team_Thorsday.Models;
+
 public class TileInfo
 {
     public int Id { get; set; }
     public string Title { get; set; } = string.Empty;
-    public string Subtitle { get; set; } = string.Empty; // e.g., "SteamDB Player Count"
-    public string GraphType { get; set; } = "placeholder"; // Future: "line", "bar", "pie" etc.
-    
-    // Future editable fields (you can expand this later)
-    // public string DataSource { get; set; } = "steamdb";
-    // public string Metric { get; set; } = "players";
+    public string Subtitle { get; set; } = string.Empty;
+    public string ValueHeader { get; set; } = "Value";
+
+    public List<TileItem> PreviewItems { get; set; } = new();
+    public List<TileItem> FullItems { get; set; } = new();
+    public bool IsLoading { get; set; } = true;
+    public string? ErrorMessage { get; set; }
 }

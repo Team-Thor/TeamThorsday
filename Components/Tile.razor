@@ -1,20 +1,38 @@
+@using Team_Thorsday.Models
+
 <div class="steam-tile" @onclick="HandleClick">
     <div class="tile-header">
         <h3>@TileData.Title</h3>
         <p class="subtitle">@TileData.Subtitle</p>
     </div>
-    
-    <div class="graph-placeholder">
-        <div class="fake-graph">
-            <div class="bar" style="height: 40%;"></div>
-            <div class="bar" style="height: 70%;"></div>
-            <div class="bar" style="height: 55%;"></div>
-            <div class="bar" style="height: 85%;"></div>
-            <div class="bar" style="height: 30%;"></div>
-        </div>
-        <div class="graph-label">Graph Preview</div>
+
+    <div class="tile-body">
+        @if (TileData.IsLoading)
+        {
+            <div class="tile-loading">Loading...</div>
+        }
+        else if (TileData.ErrorMessage != null)
+        {
+            <div class="tile-error">@TileData.ErrorMessage</div>
+        }
+        else if (TileData.PreviewItems.Count == 0)
+        {
+            <div class="tile-error">No data available</div>
+        }
+        else
+        {
+            <ol class="tile-list">
+                @foreach (var item in TileData.PreviewItems)
+                {
+                    <li class="tile-list-item">
+                        <span class="tile-item-name">@item.Label</span>
+                        <span class="tile-item-value">@item.Value</span>
+                    </li>
+                }
+            </ol>
+        }
     </div>
-    
+
     <div class="tile-footer">
         <span class="click-hint">Click to expand →</span>
     </div>

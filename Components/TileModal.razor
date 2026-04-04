@@ -1,3 +1,5 @@
+@using Team_Thorsday.Models
+
 @if (TileData != null)
 {
     <div class="steam-modal-backdrop" @onclick="OnCloseClicked">
@@ -6,30 +8,47 @@
                 <h2>@TileData.Title</h2>
                 <button class="close-btn" @onclick="OnCloseClicked">✕</button>
             </div>
-            
+
             <p class="modal-subtitle">@TileData.Subtitle</p>
-            
-            <!-- Expanded graph area (much larger placeholder - replace with real chart here too) -->
-            <div class="expanded-graph">
-                <div class="big-fake-graph">
-                    <!-- Larger CSS visualization -->
-                    <div class="bar" style="height: 35%;"></div>
-                    <div class="bar" style="height: 65%;"></div>
-                    <div class="bar" style="height: 80%;"></div>
-                    <div class="bar" style="height: 45%;"></div>
-                    <div class="bar" style="height: 90%;"></div>
-                    <div class="bar" style="height: 55%;"></div>
-                </div>
-                <div class="graph-label">Full Data Graph from SteamDB</div>
+
+            <div class="modal-table-wrapper">
+                @if (TileData.IsLoading)
+                {
+                    <div class="tile-loading">Loading...</div>
+                }
+                else if (TileData.FullItems.Count == 0)
+                {
+                    <p class="text-muted">No data available.</p>
+                }
+                else
+                {
+                    <table class="table table-sm steam-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>@TileData.ValueHeader</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{int rank = 1;}
+                            @foreach (var item in TileData.FullItems)
+                            {
+                                <tr>
+                                    <td>@rank</td>
+                                    <td>@item.Label</td>
+                                    <td>@item.Value</td>
+                                </tr>
+                                rank++;
+                            }
+                        </tbody>
+                    </table>
+                }
             </div>
-            
-            <!-- Future editing area (buttons are placeholders) -->
+
             <div class="modal-actions">
-                <button class="edit-btn" @onclick="HandleEditClick">✏️ Edit Tile Settings</button>
                 <button class="close-btn" @onclick="OnCloseClicked">Close</button>
             </div>
-            
-            <small class="modal-note">* Editing functionality coming soon (save custom metric, graph type, SteamDB query, etc.)</small>
         </div>
     </div>
 }
@@ -41,11 +60,5 @@
     private async Task OnCloseClicked()
     {
         await OnClose.InvokeAsync();
-    }
-
-    private void HandleEditClick()
-    {
-        // Placeholder - you will wire this to your editing logic later
-        Console.WriteLine($"Editing tile {TileData.Id}");
     }
 }
