@@ -1,27 +1,39 @@
 @using Team_Thorsday.Models
 
+<!-- Tile Detail Modal Component -->
+<!-- Displays expanded information for a clicked dashboard tile in a full-screen modal -->
+
 @if (TileData != null)
 {
+    <!-- Backdrop covers the whole screen and closes the modal when clicked -->
     <div class="steam-modal-backdrop" @onclick="OnCloseClicked">
+        
+        <!-- Modal content area - stops click propagation so clicking inside doesn't close the modal -->
         <div class="steam-modal-content" @onclick:stopPropagation="true">
+            
             <div class="modal-header">
+                <!-- Title and subtitle from the selected tile -->
                 <h2>@TileData.Title</h2>
                 <button class="close-btn" @onclick="OnCloseClicked">✕</button>
             </div>
 
             <p class="modal-subtitle">@TileData.Subtitle</p>
 
+            <!-- Main content area with full list of items -->
             <div class="modal-table-wrapper">
                 @if (TileData.IsLoading)
                 {
+                    <!-- Loading state while data is being fetched -->
                     <div class="tile-loading">Loading...</div>
                 }
                 else if (TileData.FullItems.Count == 0)
                 {
+                    <!-- No data returned after loading -->
                     <p class="text-muted">No data available.</p>
                 }
                 else
                 {
+                    <!-- Full ranked table showing all items (up to 20) for this tile -->
                     <table class="table table-sm steam-table">
                         <thead>
                             <tr>
@@ -31,7 +43,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @{int rank = 1;}
+                            @{int rank = 1;}   <!-- Manual rank counter for the table -->
                             @foreach (var item in TileData.FullItems)
                             {
                                 <tr>
@@ -46,6 +58,7 @@
                 }
             </div>
 
+            <!-- Action buttons at the bottom -->
             <div class="modal-actions">
                 <button class="close-btn" @onclick="OnCloseClicked">Close</button>
             </div>
@@ -54,9 +67,24 @@
 }
 
 @code {
-    [Parameter] public TileInfo TileData { get; set; } = default!;
-    [Parameter] public EventCallback OnClose { get; set; }
+    /// <summary>
+    /// The TileInfo object containing all data for the currently displayed modal.
+    /// Passed from the parent Dashboard component when a tile is clicked.
+    /// </summary>
+    [Parameter] 
+    public TileInfo TileData { get; set; } = default!;
 
+    /// <summary>
+    /// Event callback to notify the parent component that the modal should be closed.
+    /// Usually sets selectedTile = null in the parent.
+    /// </summary>
+    [Parameter] 
+    public EventCallback OnClose { get; set; }
+
+    /// <summary>
+    /// Handles clicks on the backdrop or the Close button.
+    /// Invokes the OnClose callback to close the modal.
+    /// </summary>
     private async Task OnCloseClicked()
     {
         await OnClose.InvokeAsync();

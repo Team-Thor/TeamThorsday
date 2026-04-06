@@ -1,15 +1,24 @@
 @using Team_Thorsday.ViewModels
 @inject IJSRuntime JS
 
+<!-- Top Navigation Bar Component -->
+<!-- Contains branding, main navigation links, and dark mode toggle -->
+
 <nav class="navbar navbar-expand-md top-navbar">
     <div class="container-fluid">
+        <!-- Application branding / logo -->
         <a class="navbar-brand" href="">SteamDBDB</a>
+
+        <!-- Mobile hamburger menu button -->
         <button class="navbar-toggler" type="button" @onclick="ToggleNavMenu" title="Navigation menu">
             <span class="navbar-toggler-icon"></span>
         </button>
+
+        <!-- Collapsible navigation menu -->
         <div class="@NavMenuCssClass navbar-collapse">
             <ul class="navbar-nav me-auto mb-2 mb-md-0">
                 <li class="nav-item">
+                    <!-- Home link - active on the root route -->
                     <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
                         <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
                     </NavLink>
@@ -20,7 +29,11 @@
                     </NavLink>
                 </li>
             </ul>
-            <button class="btn btn-outline-light dark-mode-toggle" @onclick="ToggleDarkMode" title="Toggle dark mode">
+
+            <!-- Dark mode toggle button -->
+            <button class="btn btn-outline-light dark-mode-toggle" 
+                    @onclick="ToggleDarkMode" 
+                    title="Toggle dark mode">
                 @(isDarkMode ? "Light Mode" : "Dark Mode")
             </button>
         </div>
@@ -28,22 +41,43 @@
 </nav>
 
 @code {
+    /// <summary>
+    /// Controls whether the navigation menu is collapsed on mobile devices.
+    /// </summary>
     private bool collapseNavMenu = true;
+
+    /// <summary>
+    /// Tracks the current dark mode state.
+    /// </summary>
     private bool isDarkMode = false;
 
+    /// <summary>
+    /// Computed property that returns the appropriate CSS class for the Bootstrap navbar collapse behavior.
+    /// </summary>
     private string NavMenuCssClass => collapseNavMenu ? "collapse" : "";
 
+    /// <summary>
+    /// Toggles the mobile navigation menu open/closed.
+    /// </summary>
     private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
     }
 
+    /// <summary>
+    /// Toggles dark mode on/off and saves the preference via JavaScript interop.
+    /// Calls the global JavaScript function `setDarkMode`.
+    /// </summary>
     private async Task ToggleDarkMode()
     {
         isDarkMode = !isDarkMode;
         await JS.InvokeVoidAsync("setDarkMode", isDarkMode);
     }
 
+    /// <summary>
+    /// On first render, loads the user's saved dark mode preference from localStorage.
+    /// Uses JavaScript `eval` to check the stored value.
+    /// </summary>
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)

@@ -6,11 +6,11 @@
 
 <div class="container-fluid py-4">
     <h2 class="mb-1">Backend API Test</h2>
-    <p class="text-muted mb-4">Verify each backend route is reachable and returning data.</p>
+    <p class="text-muted mb-4">Verify each backend route is reachable and returning data from SteamSpy and CheapShark.</p>
 
     <div class="row g-4">
 
-        @* \1 *@
+        <!-- ==================== 1. SteamSpy - Games by Tag ==================== -->
         <div class="col-12">
             <div class="card shadow-sm">
                 <div class="card-header d-flex align-items-center gap-2">
@@ -26,10 +26,12 @@
                             Fetch
                         </button>
                     </div>
+
                     @if (tagError != null)
                     {
                         <div class="alert alert-danger py-2">@tagError</div>
                     }
+
                     @if (tagResults != null)
                     {
                         <p class="text-muted small mb-2">@tagResults.Count results</p>
@@ -67,7 +69,7 @@
             </div>
         </div>
 
-        @* \1 *@
+        <!-- ==================== 2. SteamSpy - Single App Details ==================== -->
         <div class="col-md-6">
             <div class="card shadow-sm h-100">
                 <div class="card-header d-flex align-items-center gap-2">
@@ -83,10 +85,12 @@
                             Fetch
                         </button>
                     </div>
+
                     @if (spyAppError != null)
                     {
                         <div class="alert alert-danger py-2">@spyAppError</div>
                     }
+
                     @if (spyAppResult != null)
                     {
                         <dl class="row mb-0 small">
@@ -97,6 +101,7 @@
                             <dt class="col-4">Avg Playtime</dt><dd class="col-8">@spyAppResult.AveragePlaytimeMinutes min</dd>
                             <dt class="col-4">Reviews</dt>    <dd class="col-8 text-success">+@spyAppResult.Positive <span class="text-danger">-@spyAppResult.Negative</span></dd>
                         </dl>
+
                         @if (spyAppResult.Tags.Any())
                         {
                             <div class="mt-3">
@@ -114,7 +119,7 @@
             </div>
         </div>
 
-        @* \1 *@
+        <!-- ==================== 3. Combined Game Details + Deals ==================== -->
         <div class="col-md-6">
             <div class="card shadow-sm h-100">
                 <div class="card-header d-flex align-items-center gap-2">
@@ -130,10 +135,12 @@
                             Fetch
                         </button>
                     </div>
+
                     @if (gameError != null)
                     {
                         <div class="alert alert-danger py-2">@gameError</div>
                     }
+
                     @if (gameResult != null)
                     {
                         <dl class="row small mb-2">
@@ -142,6 +149,7 @@
                             <dt class="col-4">Genre</dt>      <dd class="col-8">@gameResult.Genre</dd>
                             <dt class="col-4">Owners</dt>     <dd class="col-8">@gameResult.Owners</dd>
                         </dl>
+
                         <p class="fw-semibold small mb-1">Deals (@gameResult.Deals.Count)</p>
                         @if (!gameResult.Deals.Any())
                         {
@@ -180,74 +188,104 @@
 </div>
 
 @code {
+    /// <summary>
+    /// Base URL of the backend API (change this for production or different environments).
+    /// </summary>
     private const string BackendUrl = "http://localhost:5003";
 
-    // tag search
+    // ------------------- State for "Games by Tag" endpoint -------------------
     private string tagInput = "Roguelite";
     private bool tagLoading = false;
     private string? tagError;
     private List<SteamSpyGameDto>? tagResults;
 
-    // steamspy app
+    // ------------------- State for "SteamSpy App Details" endpoint -------------------
     private string spyAppIdInput = "440";
     private bool spyAppLoading = false;
     private string? spyAppError;
     private SteamSpyGameDto? spyAppResult;
 
-    // combined game detail
+    // ------------------- State for "Combined Game + Deals" endpoint -------------------
     private string gameAppIdInput = "1245620";
     private bool gameLoading = false;
     private string? gameError;
     private GameDetailDto? gameResult;
 
+    /// <summary>
+    /// Fetches games by a SteamSpy tag (e.g. "Roguelite", "FPS", "Indie").
+    /// Calls: GET /api/steamspy/tag/{tag}
+    /// </summary>
     private async Task FetchByTag()
     {
         tagLoading = true;
         tagError = null;
         tagResults = null;
+
         try
         {
             using var http = new HttpClient();
-            tagResults = await http.GetFromJsonAsync<List<SteamSpyGameDto>>($"{BackendUrl}/api/steamspy/tag/{Uri.EscapeDataString(tagInput)}");
+            tagResults = await http.GetFromJsonAsync<List<SteamSpyGameDto>>(
+                $"{BackendUrl}/api/steamspy/tag/{Uri.EscapeDataString(tagInput)}");
         }
         catch (Exception ex)
         {
-            tagError = ex.Message;
+            tagError = $"Failed to fetch games by tag: {ex.Message}";
         }
-        tagLoading = false;
+        finally
+        {
+            tagLoading = false;
+        }
     }
 
+    /// <summary>
+    /// Fetches detailed information for a single app using SteamSpy.
+    /// Calls: GET /api/steamspy/app/{appId}
+    /// </summary>
     private async Task FetchSpyApp()
     {
         spyAppLoading = true;
         spyAppError = null;
         spyAppResult = null;
+
         try
         {
             using var http = new HttpClient();
-            spyAppResult = await http.GetFromJsonAsync<SteamSpyGameDto>($"{BackendUrl}/api/steamspy/app/{spyAppIdInput}");
+            spyAppResult = await http.GetFromJsonAsync<SteamSpyGameDto>(
+                $"{BackendUrl}/api/steamspy/app/{spyAppIdInput}");
         }
         catch (Exception ex)
         {
-            spyAppError = ex.Message;
+            spyAppError = $"Failed to fetch app details: {ex.Message}";
         }
-        spyAppLoading = false;
+        finally
+        {
+            spyAppLoading = false;
+        }
     }
 
+    /// <summary>
+    /// Fetches combined game details (SteamSpy data + current CheapShark deals).
+    /// Calls: GET /api/games/{appId}
+    /// </summary>
     private async Task FetchGameDetail()
     {
         gameLoading = true;
         gameError = null;
         gameResult = null;
+
         try
         {
             using var http = new HttpClient();
-            gameResult = await http.GetFromJsonAsync<GameDetailDto>($"{BackendUrl}/api/games/{gameAppIdInput}");
+            gameResult = await http.GetFromJsonAsync<GameDetailDto>(
+                $"{BackendUrl}/api/games/{gameAppIdInput}");
         }
         catch (Exception ex)
         {
-            gameError = ex.Message;
+            gameError = $"Failed to fetch game details: {ex.Message}";
         }
-        gameLoading = false;
+        finally
+        {
+            gameLoading = false;
+        }
     }
 }

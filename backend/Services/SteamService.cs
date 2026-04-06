@@ -3,15 +3,23 @@ using Shared.DTOs;
 
 namespace Backend.Services;
 
+/// <summary>
+/// Service for interacting with official Steam Web APIs and the Steam Store.
+/// Handles current player count, recent reviews, and new releases.
+/// </summary>
 public class SteamService(HttpClient http)
 {
-    // live ccu, no cache since it changes constantly
+    /// <summary>
+    /// Gets the current number of players online for a specific Steam app.
+    /// No caching is used because player counts change frequently.
+    /// </summary>
     public async Task<int> GetCurrentPlayersAsync(int appId)
     {
         var json = await http.GetStringAsync(
             $"https://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1/?appid={appId}");
 
-        // couldn't get this to deserialize into a class, this works though
+        // Manual JSON parsing because the response structure is simple but nested.
+        // Deserializing into a strongly-typed class was unreliable.
         using var doc = JsonDocument.Parse(json);
         return doc.RootElement
             .GetProperty("response")
@@ -19,15 +27,20 @@ public class SteamService(HttpClient http)
             .GetInt32();
     }
 
+    /// <summary>
+    /// Fetches recent reviews for a game from the Steam Store.
+    /// Returns a summary (score description, totals) plus up to 20 recent reviews.
+    /// </summary>
     public async Task<SteamReviewsDto?> GetReviewsAsync(int appId)
     {
-        // needs json=1 or steam sends back html for some reason
+        // The 'json=1' parameter is required — without it Steam sometimes returns HTML instead of JSON.
         var json = await http.GetStringAsync(
             $"https://store.steampowered.com/appreviews/{appId}?json=1&num_per_page=20&filter=recent");
 
         using var doc = JsonDocument.Parse(json);
         var root = doc.RootElement;
 
+        // If there's no query_summary, the request likely failed or returned no data
         if (!root.TryGetProperty("query_summary", out var summary))
             return null;
 
@@ -39,6 +52,7 @@ public class SteamService(HttpClient http)
             TotalReviews = summary.GetProperty("total_reviews").GetInt32()
         };
 
+        // Parse individual recent reviews if present
         if (root.TryGetProperty("reviews", out var reviewsArr))
         {
             foreach (var r in reviewsArr.EnumerateArray())
@@ -57,6 +71,10 @@ public class SteamService(HttpClient http)
         return result;
     }
 
+    /// <summary>
+    /// Fetches newly released or featured games from the Steam Store "New Releases" section.
+    /// Returns a lightweight list of SteamSpyGameDto objects.
+    /// </summary>
     public async Task<List<SteamSpyGameDto>> GetNewReleasesAsync()
     {
         try
@@ -83,7 +101,8 @@ public class SteamService(HttpClient http)
         }
         catch
         {
-            // steam changes this format sometimes
+            // Steam occasionally changes the structure of this endpoint.
+            // Return empty list gracefully instead of crashing.
             return new List<SteamSpyGameDto>();
         }
     }

@@ -3,12 +3,15 @@
 @using Team_Thorsday.Models
 @using Shared.DTOs
 @using System.Text.Json
+<!-- Service that fetches data from backend APIs -->
 @inject SteamDashboardService DashboardService
-@inject IJSRuntime JS
+<!-- Used to save/load filter settings from browser localStorage -->
+@inject IJSRuntime JS                             
 
 <div class="dashboard-container">
     <h1 class="dashboard-title">SteamDB Dashboard</h1>
 
+    <!-- Toolbar with chart toggle and filter button -->
     <div class="dashboard-toolbar">
         <button class="btn btn-gradient-border px-4" @onclick="ToggleGraph">
             <span class="me-2">&#9776;</span> @(showGraph ? "Hide Charts" : "Show Charts")
@@ -18,6 +21,8 @@
             <button class="btn btn-gradient-border px-4" @onclick="ToggleFilters">
                 &#9881; Filters @(showFilters ? "▲" : "▼")
             </button>
+
+            <!-- Filter panel (shown when showFilters is true) -->
             @if (showFilters)
             {
                 <div class="filter-panel">
@@ -43,6 +48,7 @@
                         </div>
                     </div>
 
+                    <!-- Additional filter sections for review score, review count, peak CCU, etc. -->
                     <div class="filter-row">
                         <div class="filter-section">
                             <div class="filter-section-title">Min Review Score</div>
@@ -84,6 +90,7 @@
 
                     <div class="filter-divider"></div>
 
+                    <!-- Settings for how many items appear in tiles vs charts -->
                     <div class="filter-row">
                         <div class="filter-section">
                             <div class="filter-section-title">Results per Tile</div>
@@ -110,22 +117,26 @@
 
                     <div class="filter-divider"></div>
 
+                    <!-- Applies current filters and saves them to localStorage -->
                     <button class="filter-apply-btn" @onclick="ApplyAndSave">Apply &amp; Save</button>
                 </div>
             }
         </div>
     </div>
 
+    <!-- Backdrop to close filter panel when clicking outside -->
     @if (showFilters)
     {
         <div class="filter-backdrop" @onclick="() => showFilters = false"></div>
     }
 
+    <!-- Optional large graph component at the top -->
     @if (showGraph)
     {
         <GraphView TopGames="filteredGames" Genres="genres" ChartCount="chartCount" />
     }
 
+    <!-- Main dashboard grid of clickable tiles -->
     <div class="dashboard-grid">
         @foreach (var tile in tiles)
         {
@@ -134,12 +145,16 @@
     </div>
 </div>
 
+<!-- Modal for selected tile -->
 @if (selectedTile != null)
 {
     <TileModal TileData="selectedTile" OnClose="() => selectedTile = null" />
 }
 
 @code {
+    /// <summary>
+    /// Static list of dashboard tiles. Each tile defines its title, subtitle, and what data it displays.
+    /// </summary>
     private List<TileInfo> tiles = new()
     {
         new TileInfo { Id = 1, Title = "Most Played This Week", Subtitle = "Top games by ownership",    ValueHeader = "Owners" },
@@ -150,19 +165,20 @@
         new TileInfo { Id = 6, Title = "Top Reviewed",          Subtitle = "Highest positive review %", ValueHeader = "Score" }
     };
 
+    // Data fetched from backend
     private List<SteamSpyGameDto> topGames     = new();
     private List<SteamSpyGameDto> newGames     = new();
     private List<GenreStatsDto>   genres       = new();
     private List<SteamSpyGameDto> filteredGames = new();
 
-    // Filter state (may be overwritten by LoadFilters before data arrives)
+    // Filter state (persisted to localStorage)
     private bool   hideAdultContent = true;
     private string gameType         = "all";
     private int    minReviewScore   = 0;
     private int    minReviewCount   = 0;
     private int    minCcu           = 0;
-    private int    previewCount     = 5;
-    private int    chartCount       = 15;
+    private int    previewCount     = 5;     // Items shown in each tile preview
+    private int    chartCount       = 15;    // Items shown in the graph
 
     private TileInfo? selectedTile;
     private bool showGraph   = false;
@@ -172,6 +188,9 @@
     private void ToggleGraph()   => showGraph   = !showGraph;
     private void ToggleFilters() => showFilters = !showFilters;
 
+    /// <summary>
+    /// Applies current filters, refreshes tile data, and saves settings to browser localStorage.
+    /// </summary>
     private async Task ApplyAndSave()
     {
         ApplyFilters();
@@ -183,13 +202,19 @@
         showFilters = false;
     }
 
+    /// <summary>
+    /// Applies all active filters to the topGames list and stores the result in filteredGames.
+    /// Then refreshes all tiles with the filtered data.
+    /// </summary>
     private void ApplyFilters()
     {
         var games = topGames.AsEnumerable();
 
+        // Filter out adult content based on tags
         if (hideAdultContent)
             games = games.Where(IsClean);
 
+        // Filter by free / paid / all
         games = gameType switch
         {
             "free" => games.Where(g => g.Price == "0" || g.Price == ""),
@@ -197,6 +222,7 @@
             _      => games
         };
 
+        // Filter by minimum review score percentage
         if (minReviewScore > 0)
             games = games.Where(g =>
                 g.Positive + g.Negative > 0 &&
@@ -212,6 +238,9 @@
         PopulateTiles();
     }
 
+    /// <summary>
+    /// Set of adult/NSFW tags used to filter out mature content.
+    /// </summary>
     private static readonly HashSet<string> AdultTags = new(StringComparer.OrdinalIgnoreCase)
     {
         "Nudity", "Sexual Content", "Adult Content", "NSFW", "Hentai",
@@ -221,18 +250,24 @@
     private static bool IsClean(SteamSpyGameDto g) =>
         !g.Tags.Keys.Any(t => AdultTags.Contains(t));
 
+    /// <summary>
+    /// Page initialization: loads saved filters, fetches data from backend in parallel,
+    /// applies filters, and populates all tiles.
+    /// </summary>
     protected override async Task OnInitializedAsync()
     {
         await LoadFilters();
 
         string? topError = null, newError = null, genreError = null;
 
+        // Fetch multiple datasets in parallel for better performance
         await Task.WhenAll(
             SafeFetch(() => DashboardService.GetTopGamesAsync(),    v => topGames = v, e => topError   = e),
             SafeFetch(() => DashboardService.GetNewReleasesAsync(), v => newGames = v, e => newError   = e),
             SafeFetch(() => DashboardService.GetGenreStatsAsync(),  v => genres   = v, e => genreError = e)
         );
 
+        // Set error messages on affected tiles
         if (topError != null)
         {
             foreach (var i in new[] { 0, 1, 4, 5 })
@@ -245,6 +280,10 @@
         StateHasChanged();
     }
 
+    /// <summary>
+    /// Loads previously saved filter settings from browser localStorage via JavaScript interop.
+    /// Falls back to default values if nothing is saved or if reading fails.
+    /// </summary>
     private async Task LoadFilters()
     {
         try
@@ -260,9 +299,12 @@
             if (e.TryGetProperty("previewCount",     out v))     previewCount     = v.GetInt32();
             if (e.TryGetProperty("chartCount",       out v))     chartCount       = v.GetInt32();
         }
-        catch { /* use defaults */ }
+        catch { /* use defaults if localStorage read fails */ }
     }
 
+    /// <summary>
+    /// Takes the filtered data and distributes it into each tile's PreviewItems and FullItems lists.
+    /// </summary>
     private void PopulateTiles()
     {
         var top = filteredGames;
@@ -310,6 +352,9 @@
         !string.IsNullOrEmpty(price) && price != "0" && int.TryParse(price, out var cents)
             ? $"${cents / 100.0:F2}" : "Free";
 
+    /// <summary>
+    /// Helper method to safely fetch data and handle exceptions without crashing the page.
+    /// </summary>
     private static async Task SafeFetch<T>(Func<Task<T?>> fetch, Action<T> onSuccess, Action<string> onError) where T : class
     {
         try
@@ -318,6 +363,9 @@
             if (result != null) onSuccess(result);
             else onError("No data returned");
         }
-        catch (Exception ex) { onError(ex.Message); }
+        catch (Exception ex)
+        {
+            onError(ex.Message);
+        }
     }
 }

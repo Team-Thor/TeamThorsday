@@ -3,10 +3,14 @@
 
 <div class="graph-view">
     <div class="graph-tabs">
-        <button class="graph-tab @(activeTab == "ccu"      ? "active" : "")" @onclick='() => SetTab("ccu")'>Peak CCU</button>
-        <button class="graph-tab @(activeTab == "owned"    ? "active" : "")" @onclick='() => SetTab("owned")'>Most Owned</button>
-        <button class="graph-tab @(activeTab == "genres"   ? "active" : "")" @onclick='() => SetTab("genres")'>By Genre</button>
-        <button class="graph-tab @(activeTab == "reviews"  ? "active" : "")" @onclick='() => SetTab("reviews")'>Review Scores</button>
+        <button class="graph-tab @(activeTab == "ccu"      ? "active" : "")" 
+                @onclick='() => SetTab("ccu")'>Peak CCU</button>
+        <button class="graph-tab @(activeTab == "owned"    ? "active" : "")" 
+                @onclick='() => SetTab("owned")'>Most Owned</button>
+        <button class="graph-tab @(activeTab == "genres"   ? "active" : "")" 
+                @onclick='() => SetTab("genres")'>By Genre</button>
+        <button class="graph-tab @(activeTab == "reviews"  ? "active" : "")" 
+                @onclick='() => SetTab("reviews")'>Review Scores</button>
     </div>
 
     <div class="graph-canvas-wrapper">
@@ -16,50 +20,80 @@
         }
         else
         {
+            <!-- Canvas where Chart.js will draw the chart via JavaScript interop -->
             <canvas id="steamDashboardChart"></canvas>
         }
     </div>
 </div>
 
 @code {
-    [Parameter] public List<SteamSpyGameDto> TopGames { get; set; } = new();
-    [Parameter] public List<GenreStatsDto> Genres { get; set; } = new();
-    [Parameter] public int ChartCount { get; set; } = 15;
+    /// <summary>
+    /// List of top games passed from the parent Dashboard component.
+    /// </summary>
+    [Parameter] 
+    public List<SteamSpyGameDto> TopGames { get; set; } = new();
 
-    private string activeTab = "ccu";
-    private string _lastRenderedTab = "";
+    /// <summary>
+    /// Genre statistics passed from the parent (used for the "By Genre" tab).
+    /// </summary>
+    [Parameter] 
+    public List<GenreStatsDto> Genres { get; set; } = new();
+
+    /// <summary>
+    /// How many items to show in the chart (controlled by filters).
+    /// </summary>
+    [Parameter] 
+    public int ChartCount { get; set; } = 15;
+
+    private string activeTab = "ccu";           // Currently selected chart tab
+    private string _lastRenderedTab = "";       // Used to avoid unnecessary re-renders
     private int _lastChartCount = 0;
 
+    /// <summary>
+    /// Runs after the component has rendered (including after state changes).
+    /// Responsible for rendering or updating the Chart.js chart when needed.
+    /// </summary>
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         bool hasData = TopGames.Any() || Genres.Any();
         bool needsRender = activeTab != _lastRenderedTab || ChartCount != _lastChartCount;
+
         if (hasData && needsRender)
         {
             _lastRenderedTab = activeTab;
-            _lastChartCount  = ChartCount;
+            _lastChartCount = ChartCount;
             await RenderChart();
         }
     }
 
+    /// <summary>
+    /// Changes the active tab and forces a re-render of the chart.
+    /// </summary>
     private async Task SetTab(string tab)
     {
         activeTab = tab;
-        _lastRenderedTab = "";
+        _lastRenderedTab = "";        // Force chart to re-render on next OnAfterRenderAsync
         StateHasChanged();
     }
 
+    /// <summary>
+    /// Main method that renders the appropriate Chart.js bar chart based on the selected tab.
+    /// Calls a JavaScript function `renderSteamChart` via IJSRuntime.
+    /// </summary>
     private async Task RenderChart()
     {
         switch (activeTab)
         {
             case "ccu":
-                // Log scale: CS:GO (1M) would flatten everyone else on linear
+                // Peak CCU chart - uses logarithmic scale because a few games (like CS2) have extremely high numbers
                 var ccuGames = TopGames
                     .OrderByDescending(g => g.PeakConcurrentUsersYesterday)
-                    .Take(ChartCount).ToList();
+                    .Take(ChartCount)
+                    .ToList();
+
                 await JS.InvokeVoidAsync("renderSteamChart",
-                    "steamDashboardChart", "bar",
+                    "steamDashboardChart", 
+                    "bar",
                     ccuGames.Select(g => TruncateName(g.Name)).ToArray(),
                     ccuGames.Select(g => (object)g.PeakConcurrentUsersYesterday).ToArray(),
                     "Peak CCU Yesterday",
@@ -67,13 +101,16 @@
                 break;
 
             case "owned":
-                // Sort by CCU (owners ranges are too coarse — many games share same bucket).
-                // Display midpoint of range as the value.
+                // Most Owned chart - uses Peak CCU as a proxy (owner ranges are too broad).
+                // Displays the midpoint of the owner range for better visual distribution.
                 var ownedGames = TopGames
                     .OrderByDescending(g => g.PeakConcurrentUsersYesterday)
-                    .Take(ChartCount).ToList();
+                    .Take(ChartCount)
+                    .ToList();
+
                 await JS.InvokeVoidAsync("renderSteamChart",
-                    "steamDashboardChart", "bar",
+                    "steamDashboardChart", 
+                    "bar",
                     ownedGames.Select(g => TruncateName(g.Name)).ToArray(),
                     ownedGames.Select(g => (object)ParseOwnersMid(g.Owners)).ToArray(),
                     "Estimated Owners",
@@ -81,31 +118,36 @@
                 break;
 
             case "genres":
-                // Avg CCU per game is more meaningful than total CCU —
-                // total is inflated by huge genre sizes (Action has 37k games).
+                // Shows average CCU per game in each genre (more meaningful than total CCU).
                 var genresSorted = Genres
                     .Where(g => g.GameCount > 0)
                     .OrderByDescending(g => g.TotalCcu / g.GameCount)
                     .ToList();
+
                 await JS.InvokeVoidAsync("renderSteamChart",
-                    "steamDashboardChart", "bar",
+                    "steamDashboardChart", 
+                    "bar",
                     genresSorted.Select(g => g.Genre).ToArray(),
                     genresSorted.Select(g => (object)(g.TotalCcu / g.GameCount)).ToArray(),
                     "Avg CCU per Game");
                 break;
 
             case "reviews":
-                // Filter to games with enough reviews for a meaningful score,
-                // and set Y min near the floor of the data so differences show.
+                // Review score chart - only includes games with at least 1,000 reviews for statistical relevance.
                 var reviewGames = TopGames
                     .Where(g => g.Positive + g.Negative >= 1000)
                     .OrderByDescending(g => (double)g.Positive / (g.Positive + g.Negative))
-                    .Take(ChartCount).ToList();
+                    .Take(ChartCount)
+                    .ToList();
+
+                // Calculate a reasonable Y-axis minimum so differences are visible
                 double yMin = reviewGames.Any()
                     ? Math.Floor(reviewGames.Min(g => (double)g.Positive / (g.Positive + g.Negative) * 100)) - 2
                     : 80;
+
                 await JS.InvokeVoidAsync("renderSteamChart",
-                    "steamDashboardChart", "bar",
+                    "steamDashboardChart", 
+                    "bar",
                     reviewGames.Select(g => TruncateName(g.Name)).ToArray(),
                     reviewGames.Select(g => (object)Math.Round((double)g.Positive / (g.Positive + g.Negative) * 100, 1)).ToArray(),
                     "Positive Review %",
@@ -114,19 +156,29 @@
         }
     }
 
+    /// <summary>
+    /// Truncates long game names so they fit nicely on the chart X-axis.
+    /// </summary>
     private static string TruncateName(string name) =>
         name.Length > 20 ? name[..17] + "…" : name;
 
-    // Parse midpoint of "100,000,000 .. 200,000,000" → 150,000,000
+    /// <summary>
+    /// Parses owner range strings like "100,000,000 .. 200,000,000" and returns the midpoint.
+    /// Falls back to the lower bound if parsing fails.
+    /// </summary>
     private static long ParseOwnersMid(string owners)
     {
         var parts = owners.Split("..");
         if (parts.Length == 2
             && long.TryParse(parts[0].Trim().Replace(",", ""), out var lo)
             && long.TryParse(parts[1].Trim().Replace(",", ""), out var hi))
+        {
             return (lo + hi) / 2;
+        }
+
         if (parts.Length >= 1 && long.TryParse(parts[0].Trim().Replace(",", ""), out var lower))
             return lower;
+
         return 0;
     }
 }
