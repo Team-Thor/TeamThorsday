@@ -8,11 +8,14 @@ builder.Services.AddHttpClient<CheapSharkService>();
 builder.Services.AddHttpClient<SteamService>();
 
 // allow the blazor client to call us
+var allowedOrigins = (Environment.GetEnvironmentVariable("ALLOWED_ORIGINS") ?? "https://localhost:7102,http://localhost:5145")
+    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("https://localhost:7102", "http://localhost:5145")
+        policy.WithOrigins(allowedOrigins)
               .AllowAnyHeader()
               .AllowAnyMethod();
     });

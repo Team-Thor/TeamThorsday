@@ -27,7 +27,8 @@ await supabase.InitializeAsync();
 builder.Services.AddSingleton(provider => supabase);
 builder.Services.AddScoped<IDatabaseService, DatabaseService>();
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+var backendUrl = builder.Configuration["BackendUrl"] ?? "http://localhost:5003";
 builder.Services.AddScoped(_ => new SteamDashboardService(
-    new HttpClient { BaseAddress = new Uri("http://localhost:5003") }));
+    new HttpClient { BaseAddress = new Uri(backendUrl) }));
 
 await builder.Build().RunAsync();
